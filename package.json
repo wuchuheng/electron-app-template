@@ -6,7 +6,7 @@
     "dev": "ts-node bin/cli.ts"
   },
   "version": "0.0.1",
-  "description": "React project template",
+  "description": "Electron project template",
   "repository": {
     "type": "git",
     "url": "https://github.com/wuchuheng/electron-app-template.git"
@@ -19,8 +19,16 @@
     "typescript",
     "template",
     "cli",
-    "ts-react-template",
-    "ts-react"
+    "electron-app-template",
+    "ts-react",
+    "electron",
+    "electron-react",
+    "electron-react-template",
+    "electron-react-typescript",
+    "electron-react-ts",
+    "sqlite3",
+    "electron-sqlite3",
+    "electron-sqlite3-template"
   ],
   "author": "wuchuheng",
   "license": "MIT",

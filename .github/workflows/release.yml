@@ -44,7 +44,7 @@ jobs:
           git pull origin main
           git add .
           git commit -m "Bump version to ${GITHUB_REF#refs/tags/}"
-          git remote add token https://${GIT_ACCESS_TOKEN}@github.com/wuchuheng/ts-react-template.git
+          git remote add token https://${GIT_ACCESS_TOKEN}@github.com/wuchuheng/electron-app-template.git
 
           git push token main
         env:

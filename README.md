@@ -1,8 +1,8 @@
-<h1 align="center">ts-react-template</h1>
+<h1 align="center">electron-app-template</h1>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@wuchuheng/react"><img src="https://img.shields.io/npm/v/@wuchuheng/react.svg" alt="npm version"></a>
-  <a href="https://github.com/wuchuheng/ts-react-template"><img src="https://img.shields.io/github/license/wuchuheng/ts-react-template.svg" alt="license"></a>
+  <a href="https://github.com/wuchuheng/electron-app-template"><img src="https://img.shields.io/github/license/wuchuheng/electron-app-template.svg" alt="license"></a>
 </p>
 
 ## 🚀 About
@@ -51,7 +51,7 @@ For more commands and options, refer to the `package.json` file in your newly cr
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/wuchuheng/ts-react-template/issues).
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/wuchuheng/electron-app-template/issues).
 
 ## 📝 License
 

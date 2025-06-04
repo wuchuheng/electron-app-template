@@ -102,9 +102,7 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
     <div className="titlebar flex items-center justify-between px-2 py-2 h-titlebar select-none drag  text-text-primary">
       {/* App Title - Left side */}
       <div className="flex items-center space-x-3 no-drag">
-        <span className="text-sm font-medium opacity-80 text-primary-600 dark:text-primary-400">
-          {packageJson.productName}
-        </span>
+        <span className="text-sm font-medium opacity-80 ">{packageJson.productName}</span>
       </div>
 
       {/* Controls - Right side */}
@@ -115,7 +113,7 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
           className="titlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
           aria-label="Switch Language"
         >
-          <span className="text-primary-600 dark:text-primary-400">{Icons.LanguageIcon}</span>
+          {Icons.LanguageIcon}
         </button>
 
         {/* Theme toggle */}
@@ -127,9 +125,7 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
           className="titlebar-button p-2 rounded-md hover:bg-hover hover:text-text-primary transition-all duration-200"
           aria-label="Toggle Theme"
         >
-          <span className="text-primary-600 dark:text-primary-400">
-            <ThemeIcon isDark={isDarkTheme} />
-          </span>
+          <ThemeIcon isDark={isDarkTheme} />
         </button>
 
         {/* Window controls */}

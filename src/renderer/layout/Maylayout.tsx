@@ -10,6 +10,14 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
   const languageList = ['en', 'zh'];
   const [isDarkTheme, setIsDarkTheme] = React.useState<boolean>(false);
 
+  // Initialize theme on component mount - default to light theme
+  React.useEffect(() => {
+    // Remove any existing dark class to ensure light theme is default
+    document.documentElement.classList.remove('dark');
+    setIsDarkTheme(false);
+    console.log('Initialize theme on component mount - default to light theme');
+  }, []);
+
   const onToggleTheme = () => {
     document.documentElement.classList.toggle('dark');
     const isDark = document.documentElement.classList.contains('dark');
@@ -35,9 +43,9 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
         algorithm: isDarkTheme ? theme.darkAlgorithm : theme.defaultAlgorithm,
       }}
     >
-      <div className="h-[100vh] bg-background-primary">
+      <div className="h-[100vh] bg-background-primary flex flex-col">
         <TitleBar isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} onToggleLanguage={onToggleLanguage} />
-        {props.children}
+        <main className="flex-1 overflow-y-auto">{props.children}</main>
       </div>
     </ConfigProvider>
   );

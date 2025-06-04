@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import TitleBar from './TitleBar';
 import { ConfigProvider, theme } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 type MainLayoutProps = {
   children: React.ReactNode;
@@ -24,14 +25,12 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
     setIsDarkTheme(isDark);
   };
 
-  const onToggleLanguage = () => {
-    const index = languageList.indexOf(language);
-    if (index === languageList.length - 1) {
-      setLanguage(languageList[0]);
-    } else {
-      setLanguage(languageList[index + 1]);
-    }
-  };
+  const { i18n } = useTranslation();
+
+  const onToggleLanguage = useCallback(() => {
+    const newLang = i18n.language.startsWith('en') ? 'zh' : 'en';
+    i18n.changeLanguage(newLang);
+  }, [i18n]);
 
   return (
     <ConfigProvider

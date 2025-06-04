@@ -38,13 +38,13 @@ cd my-app
 Install dependencies:
 
 ```bash
-pnpm install
+npm install
 ```
 
 Start the development server:
 
 ```bash
-pnpm dev
+npm dev
 ```
 
 For more commands and options, refer to the `package.json` file in your newly created project.

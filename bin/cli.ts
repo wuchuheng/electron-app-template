@@ -11,7 +11,7 @@ import { exit } from 'process';
  * It handles the following tasks:
  * 1. Validates the input to ensure a directory name is provided.
  * 2. Copies the template project files to the specified directory.
- * 3. Installs the necessary dependencies using pnpm.
+ * 3. Installs the necessary dependencies using npm.
  * 4. Provides instructions to the user on how to start the development server.
  *
  * Usage:
@@ -24,9 +24,6 @@ async function main() {
   // 1.1 Get the directory name from the command line arguments.
   const projectName = getProjectNameFromArgs();
 
-  // 1.2 Validate the cli `pnpm` is installed.
-  validatePnpm();
-
   // 2. Process the logic.
   // 2.1 Copy template project, including dotfiles.
   console.log('Copying project files...');
@@ -34,7 +31,7 @@ async function main() {
 
   // 2.2 go into the project directory and install dependencies.
   console.log('Installing dependencies...');
-  execSync('cd ' + projectName + ' && pnpm install', { stdio: 'inherit' });
+  execSync('cd ' + projectName + ' && npm install', { stdio: 'inherit' });
 
   // 2.3 If the git is installed, initialize a git repository.
   const gitInstalled = execSync('git --version', { stdio: 'ignore' });
@@ -98,18 +95,6 @@ function printHelpMessage() {
 }
 
 /**
- * Validate the pnpm is installed.
- */
-function validatePnpm() {
-  try {
-    execSync('pnpm --version', { stdio: 'ignore' });
-  } catch (error) {
-    console.error('pnpm is not installed. Please install pnpm first.');
-    exit(1);
-  }
-}
-
-/**
  * Print the success message.
  *
  * @param {string} projectName - The name of the project.
@@ -120,6 +105,6 @@ function printSuccessMessage(projectName: string) {
   };
   blodGreedPrint('Project created successfully.');
   blodGreedPrint(`To start the development server, run:`);
-  blodGreedPrint(`cd ${projectName} && pnpm dev`);
+  blodGreedPrint(`cd ${projectName} && npm run start`);
   console.log('');
 }

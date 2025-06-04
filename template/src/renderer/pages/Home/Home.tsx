@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export const Home = () => {
-  const { t } = useTranslation();
+  useTranslation();
   const navigate = useNavigate();
   const goToAbout = () => {
     navigate('/about');
@@ -22,7 +22,7 @@ export const Home = () => {
       <div className="w-full max-w-4xl space-y-6">
         {/* Header Section */}
         <div className="rounded-lg bg-background-secondary p-6 text-center shadow-lg">
-          <h1 className="mb-4 text-3xl font-bold text-primary-600">TikDesk Desktop</h1>
+          <h1 className="mb-4 text-3xl font-bold text-primary-600">electron-app-name Desktop</h1>
           <p className="text-text-secondary">Electron + React + TypeScript Desktop Application</p>
         </div>
 

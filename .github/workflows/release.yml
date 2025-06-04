@@ -33,7 +33,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # The permission to write for the repository has to be maked in the repository > settings > action > Workflow permissions
+      # The permission to write for the repository has to be marked in the repository > settings > action > Workflow permissions
       - name: Commit and push changes
         run: |
           # Set username and email for git
@@ -44,8 +44,6 @@ jobs:
           git pull origin main
           git add .
           git commit -m "Bump version to ${GITHUB_REF#refs/tags/}"
-          git remote add token https://${GIT_ACCESS_TOKEN}@github.com/wuchuheng/electron-app-template.git
-
-          git push token main
+          git push origin main
         env:
-          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

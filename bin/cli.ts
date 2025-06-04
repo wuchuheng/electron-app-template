@@ -91,7 +91,7 @@ function getProjectNameFromArgs() {
  * Print the help message.
  */
 function printHelpMessage() {
-  console.log('Usage: pnpx @wuchuheng/react <directory>');
+  console.log('Usage: pnpx @wuchuheng/electron <directory>');
   console.log('Version: 0.0.1');
   console.log('Create a new React project with a modern tech stack.');
   console.log('');

@@ -1,10 +1,12 @@
-# Electron App Template
+<h1 align="center"> Electron App Template</h1>
 
 💅 **A modern Electron app boilerplate with React v19, TypeScript v5, TailwindCSS v3, Ant Design v5, SQLite3 database, and automated GitHub releases.**
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@wuchuheng/electron"><img src="https://img.shields.io/npm/v/@wuchuheng/electron.svg" alt="npm version"></a>
-  <a href="https://github.com/wuchuheng/electron-app-template"><img src="https://img.shields.io/github/license/wuchuheng/electron-app-template.svg" alt="license"></a>
+  <a href="https://github.com/wuchuheng/electron-app-template/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/wuchuheng/electron-app-template/release.yml?label=🚀%20Release" alt="release workflow"></a>
+  <a href="https://github.com/wuchuheng/electron-app-template/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/wuchuheng/electron-app-template/test.yml?label=🧪%20Tests" alt="test workflow"></a>
+  <a href="https://github.com/wuchuheng/electron-app-template"><img src="https://img.shields.io/github/license/wuchuheng/electron-app-template.svg?label=⚖️%20License" alt="MIT license"></a>
 </p>
 
 ## ✨ Features

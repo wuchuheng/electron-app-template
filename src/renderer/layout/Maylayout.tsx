@@ -5,9 +5,15 @@ type MainLayoutProps = {
   children: React.ReactNode;
 };
 export const MainLayout: React.FC<MainLayoutProps> = props => {
-  const [isDarkTheme, setIsDarkTheme] = React.useState(false);
   const [language, setLanguage] = React.useState<string>('en');
   const languageList = ['en', 'zh'];
+  const [isDarkTheme, setIsDarkTheme] = React.useState<boolean>(false);
+
+  const onToggleTheme = () => {
+    document.documentElement.classList.toggle('dark');
+    const isDark = document.documentElement.classList.contains('dark');
+    setIsDarkTheme(isDark);
+  };
 
   const onToggleLanguage = () => {
     const index = languageList.indexOf(language);
@@ -21,11 +27,7 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
   return (
     <>
       <div>
-        <TitleBar
-          isDarkTheme={isDarkTheme}
-          onToggleTheme={() => setIsDarkTheme(!isDarkTheme)}
-          onToggleLanguage={onToggleLanguage}
-        />
+        <TitleBar isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} onToggleLanguage={onToggleLanguage} />
         {props.children}
       </div>
     </>

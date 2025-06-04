@@ -1,14 +1,13 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import TitleBar from './TitleBar';
 import { ConfigProvider, theme } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { Bootloading } from './Bootloading';
 
 type MainLayoutProps = {
   children: React.ReactNode;
 };
 export const MainLayout: React.FC<MainLayoutProps> = props => {
-  const [language, setLanguage] = React.useState<string>('en');
-  const languageList = ['en', 'zh'];
   const [isDarkTheme, setIsDarkTheme] = React.useState<boolean>(false);
 
   // Initialize theme on component mount - default to light theme
@@ -44,7 +43,9 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
     >
       <div className="h-[100vh] bg-background-primary flex flex-col">
         <TitleBar isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} onToggleLanguage={onToggleLanguage} />
-        <main className="flex-1 overflow-y-auto">{props.children}</main>
+        <main className="flex-1 overflow-y-auto">
+          <Bootloading>{props.children}</Bootloading>
+        </main>
       </div>
     </ConfigProvider>
   );

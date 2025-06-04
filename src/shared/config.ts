@@ -1,4 +1,5 @@
-import { BootloadingProcessing } from '../types/electron.d';
+import { Welcome } from 'src/main/database/entities/welcom';
+import { BootloadingProgressing } from '../types/electron.d';
 import { StrictConfig } from './config-utils';
 import { createIpcChannel } from './ipc-channel';
 import createSubscriptionChannel from './ipc-subscription';
@@ -12,7 +13,10 @@ export const config: StrictConfig = {
   },
 
   system: {
-    bootloading: createSubscriptionChannel<BootloadingProcessing>('system/bootloading'),
-    getBootloadingProcessing: createIpcChannel<void, BootloadingProcessing>('system/getBootloadingProcessing'),
+    bootloading: createSubscriptionChannel<BootloadingProgressing>('system/bootloading'),
+    getBootloadProgressing: createIpcChannel<void, BootloadingProgressing>('system/getBootloadingProcessing'),
+  },
+  welcome: {
+    getWelcome: createIpcChannel<void, Welcome>('welcome/getWelcome'),
   },
 };

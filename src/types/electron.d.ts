@@ -1,3 +1,5 @@
+import { Welcome } from 'src/main/database/entities/welcom';
+
 export type Pagination<T> = {
   page: number;
   total: number;
@@ -5,7 +7,7 @@ export type Pagination<T> = {
   items: T[];
 };
 
-export type BootloadingProcessing = {
+export type BootloadingProgressing = {
   progress: number;
   title: string;
 };
@@ -41,13 +43,21 @@ declare global {
          * @param callback - Callback function to be called with the bootloading data
          * @returns - Function to stop the bootloading
          */
-        bootloading: (callback: (data: BootloadingProcessing) => void) => () => void;
+        bootloading: (callback: (data: BootloadingProgressing) => void) => () => void;
 
         /**
          * Get the bootloading processing
          * @returns - Bootloading processing data
          */
-        getBootloadingProcessing: () => Promise<BootloadingProcessing>;
+        getBootloadProgressing: () => Promise<BootloadingProgressing>;
+      };
+
+      /**
+       * Get the welcome message
+       * @returns - Welcome message
+       */
+      welcome: {
+        getWelcome: () => Promise<Welcome>;
       };
     };
   }

@@ -99,7 +99,7 @@ const TitleBar: React.FC<TitleBarProps> = ({ isDarkTheme, onToggleTheme, onToggl
   };
 
   return (
-    <div className="titlebar flex items-center justify-between px-2 py-2 h-titlebar select-none drag bg-background-primary text-text-primary">
+    <div className="titlebar flex items-center justify-between px-2 py-2 h-titlebar select-none drag  text-text-primary">
       {/* App Title - Left side */}
       <div className="flex items-center space-x-3 no-drag">
         <span className="text-sm font-medium opacity-80 text-primary-600 dark:text-primary-400">

@@ -17,19 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   root.render(
     <React.StrictMode>
-      <ConfigProvider
-        theme={{
-          token: {
-            colorPrimary: '#1890ff',
-            borderRadius: 6,
-          },
-          algorithm: prefersDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        }}
-      >
-        <MainLayout>
-          <RouteRender />
-        </MainLayout>
-      </ConfigProvider>
+      <MainLayout>
+        <RouteRender />
+      </MainLayout>
     </React.StrictMode>
   );
 });

@@ -1,5 +1,6 @@
 import React from 'react';
 import TitleBar from './TitleBar';
+import { ConfigProvider, theme } from 'antd';
 
 type MainLayoutProps = {
   children: React.ReactNode;
@@ -25,11 +26,19 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
   };
 
   return (
-    <>
-      <div>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#1890ff',
+          borderRadius: 6,
+        },
+        algorithm: isDarkTheme ? theme.darkAlgorithm : theme.defaultAlgorithm,
+      }}
+    >
+      <div className="h-[100vh] bg-background-primary">
         <TitleBar isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} onToggleLanguage={onToggleLanguage} />
         {props.children}
       </div>
-    </>
+    </ConfigProvider>
   );
 };

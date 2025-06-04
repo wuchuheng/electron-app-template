@@ -4,9 +4,9 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@wuchuheng/electron"><img src="https://img.shields.io/npm/v/@wuchuheng/electron.svg" alt="npm version"></a>
-  <a href="https://github.com/wuchuheng/electron-app-template/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/wuchuheng/electron-app-template/release.yml?label=🚀%20Release" alt="release workflow"></a>
-  <a href="https://github.com/wuchuheng/electron-app-template/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/wuchuheng/electron-app-template/test.yml?label=🧪%20Tests" alt="test workflow"></a>
-  <a href="https://github.com/wuchuheng/electron-app-template"><img src="https://img.shields.io/github/license/wuchuheng/electron-app-template.svg?label=⚖️%20License" alt="MIT license"></a>
+  <a href="https://github.com/wuchuheng/electron-app-template/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/wuchuheng/electron-app-template/release.yml?label=%F0%9F%9A%80%20Release" alt="🚀 Release"></a>
+  <a href="https://github.com/wuchuheng/electron-app-template/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/wuchuheng/electron-app-template/test.yml?label=%F0%9F%A7%AA%20Tests" alt="🧪 Tests"></a>
+  <a href="https://github.com/wuchuheng/electron-app-template"><img src="https://img.shields.io/github/license/wuchuheng/electron-app-template.svg?label=%E2%9A%96%EF%B8%8F%20License" alt="⚖️ License"></a>
 </p>
 
 ## ✨ Features

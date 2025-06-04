@@ -2,7 +2,7 @@
   "name": "@wuchuheng/electron",
   "scripts": {
     "build": "tsc",
-    "prepack": "pnpm build",
+    "prepack": "npm build",
     "dev": "ts-node bin/cli.ts"
   },
   "version": "0.0.1",
@@ -32,6 +32,9 @@
   ],
   "author": "wuchuheng",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.11.1",

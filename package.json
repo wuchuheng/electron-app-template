@@ -2,7 +2,7 @@
   "name": "@wuchuheng/electron",
   "scripts": {
     "build": "tsc",
-    "prepack": "npm build",
+    "prepack": "npm run build",
     "dev": "ts-node bin/cli.ts"
   },
   "version": "0.0.1",

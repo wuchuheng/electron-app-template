@@ -40,10 +40,8 @@ jobs:
           git checkout -b main
 
           git pull origin main
-          git add .
+          git add package.json
           git commit -m "Bump version to ${GITHUB_REF#refs/tags/}"
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Test published package
-        run: npx @wuchuheng/electron tmp

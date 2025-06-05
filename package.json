@@ -42,6 +42,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "electron": "^36.3.2",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.11.1",
     "@types/express": "^5.0.0",

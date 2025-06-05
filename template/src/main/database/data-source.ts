@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import packageJson from '../../../../package.json';
+import packageJson from '../../../package.json';
 import { logger } from '../utils/logger';
 import { Welcome } from './entities/welcom';
 import { seedDatabase } from './seed';

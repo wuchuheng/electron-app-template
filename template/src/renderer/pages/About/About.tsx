@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import packageJson from '../../../../../package.json';
+import packageJson from '../../../../package.json';
 
 export const About: React.FC = () => {
   const navigate = useNavigate();

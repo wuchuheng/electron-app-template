@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
@@ -20,6 +21,7 @@ import { exit } from 'process';
  * @throws {Error} If the directory name is not provided or if any operation fails.
  */
 async function main() {
+  console.log('🚀 Starting app...');
   try {
     // 1. Handling input.
     // 1.1 Get the directory name from the command line arguments.

@@ -99,7 +99,7 @@ src/
 
 ```bash
 # Create a new project
-pnpx @wuchuheng/electron my-app
+npx @wuchuheng/electron my-app
 cd my-app
 
 # Install dependencies

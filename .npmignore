@@ -1,15 +1,15 @@
-.github
-.vscode
-bin
-node_modules
-.gitignore
-.npmignore
-.prettierrc
-CONTRIBUTING.md
-eslint.config.js
-push.sh
-tsconfig.json
-.git
+./.github
+./.vscode
+./bin
+./node_modules
+./.gitignore
+./.npmignore
+./.prettierrc
+./CONTRIBUTING.md
+./eslint.config.js
+./push.sh
+./tsconfig.json
+./.git
 
 !template/.editorconfig
 !template/.eslintrc.json

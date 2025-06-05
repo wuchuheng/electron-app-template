@@ -36,6 +36,56 @@
 💫 **ESLint** + **Prettier** with **TailwindCSS** plugin  
 🔮 **GitHub Actions** for automated releases
 
+## 🏗️ Project Architecture
+
+This project follows a well-structured layered architecture pattern:
+
+```
+Windows Layer → IPC Layer → IPC Layout → Service Layout → Repository Layout
+```
+
+### 📁 **Project Structure**
+
+```bash
+src/
+├── main/
+│   ├── database/          # Database configuration and entities
+│   ├── ipc/              # Inter-Process Communication handlers
+│   ├── main.ts           # Main process entry point
+│   ├── services/         # Business logic and service layer
+│   ├── utils/            # Utility functions and helpers
+│   └── windows/          # Window management and creation
+├── preload/
+│   └── preload.ts        # Preload scripts for secure context bridge
+├── renderer/
+│   ├── App.tsx           # Main React application component
+│   ├── assets/           # Static assets (images, icons, etc.)
+│   ├── config/           # Frontend configuration
+│   ├── i18n/             # Internationalization files
+│   ├── layout/           # UI layout components
+│   ├── pages/            # Application pages/screens
+│   ├── renderer.css      # Global styles
+│   ├── renderer.html     # HTML template
+│   ├── renderer.ts       # Renderer process entry point
+│   └── styles/           # CSS/SCSS style files
+├── shared/
+│   ├── config-utils.ts   # Shared configuration utilities
+│   ├── config.ts         # Application configuration
+│   ├── ipc-channel.ts    # IPC channel definitions
+│   └── ipc-subscription.ts # IPC event subscriptions
+└── types/
+    ├── custom.d.ts       # Custom type definitions
+    └── electron.d.ts     # Electron-specific types
+```
+
+### 🔄 **Architecture Flow**
+
+1. **🪟 Windows Layer**: Manages application windows and their lifecycle
+2. **📡 IPC Layer**: Handles communication between main and renderer processes
+3. **🎨 IPC Layout**: Organizes IPC communication patterns and data flow
+4. **⚙️ Service Layer**: Contains business logic and application services
+5. **🗄️ Repository Layer**: Manages data access and database operations
+
 ## ⚙️ Requirements
 
 - **Node.js** 20+

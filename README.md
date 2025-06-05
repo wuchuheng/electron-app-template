@@ -9,6 +9,10 @@
   <a href="https://github.com/wuchuheng/electron-app-template"><img src="https://img.shields.io/github/license/wuchuheng/electron-app-template.svg?label=%E2%9A%96%EF%B8%8F%20License" alt="⚖️ License"></a>
 </p>
 
+<p align="center">
+  <img src="./screenshot.png" alt="Electron App Template" />
+</p>
+
 ## ✨ Features
 
 ### 🚀 Core Features

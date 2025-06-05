@@ -1,15 +1,4 @@
 node_modules
 push.sh
-dist
+/dist
 .DS_Store
-
-# Webpack
-.webpack/
-
-# Electron-Forge
-out/
-
-*.sqlite
-*.sqlite*
-
-logs

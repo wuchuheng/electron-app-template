@@ -32,6 +32,12 @@
   ],
   "author": "wuchuheng",
   "license": "MIT",
+  "files": [
+    "template/",
+    "template/.gitignore",
+    "README.md",
+    "LICENSE"
+  ],
   "publishConfig": {
     "access": "public"
   },

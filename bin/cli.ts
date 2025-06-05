@@ -20,29 +20,50 @@ import { exit } from 'process';
  * @throws {Error} If the directory name is not provided or if any operation fails.
  */
 async function main() {
-  // 1. Handling input.
-  // 1.1 Get the directory name from the command line arguments.
-  const projectName = getProjectNameFromArgs();
+  try {
+    // 1. Handling input.
+    // 1.1 Get the directory name from the command line arguments.
+    const projectName = getProjectNameFromArgs();
+    console.log(`Creating project: ${projectName}`);
 
-  // 2. Process the logic.
-  // 2.1 Copy template project, including dotfiles.
-  console.log('Copying project files...');
-  fs.cpSync(path.join(__dirname, '../template'), projectName, { recursive: true, force: true });
+    // 2. Process the logic.
+    // 2.1 Copy template project, including dotfiles.
+    console.log('Copying project files...');
+    const templatePath = path.join(__dirname, '../template');
+    console.log(`Template path: ${templatePath}`);
+    console.log(`Target path: ${projectName}`);
 
-  // 2.2 go into the project directory and install dependencies.
-  console.log('Installing dependencies...');
-  execSync('cd ' + projectName + ' && npm install', { stdio: 'inherit' });
+    if (!fs.existsSync(templatePath)) {
+      throw new Error(`Template directory not found at: ${templatePath}`);
+    }
 
-  // 2.3 If the git is installed, initialize a git repository.
-  const gitInstalled = execSync('git --version', { stdio: 'ignore' });
-  if (gitInstalled) {
-    execSync('cd ' + projectName + ' && git init', { stdio: 'inherit' });
+    fs.cpSync(templatePath, projectName, { recursive: true, force: true });
+    console.log('✅ Project files copied successfully');
+
+    // 2.2 go into the project directory and install dependencies.
+    console.log('Installing dependencies...');
+    execSync('cd ' + projectName + ' && npm install', { stdio: 'inherit' });
+    console.log('✅ Dependencies installed successfully');
+
+    // 2.3 If the git is installed, initialize a git repository.
+    try {
+      execSync('git --version', { stdio: 'ignore' });
+      execSync('cd ' + projectName + ' && git init', { stdio: 'inherit' });
+      console.log('✅ Git repository initialized');
+    } catch (error) {
+      console.log('⚠️ Git not available, skipping repository initialization');
+    }
+
+    // 2.4 Print the success message in the terminal in green blod color
+    printSuccessMessage(projectName);
+    // 3. Return the result.
+  } catch (error) {
+    console.error(
+      '❌ Error creating project:',
+      error instanceof Error ? error.message : String(error)
+    );
+    process.exit(1);
   }
-
-  // 2.4 Print the success message in the terminal in green blod color
-
-  printSuccessMessage(projectName);
-  // 3. Return the result.
 }
 
 main();

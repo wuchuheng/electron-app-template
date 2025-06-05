@@ -5,7 +5,7 @@
     "prepack": "npm run build",
     "dev": "ts-node bin/cli.ts"
   },
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Electron project template",
   "repository": {
     "type": "git",

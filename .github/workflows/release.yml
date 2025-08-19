@@ -30,18 +30,3 @@ jobs:
         run: npm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # The permission to write for the repository has to be marked in the repository > settings > action > Workflow permissions
-      - name: Commit and push changes
-        run: |
-          # Set username and email for git
-          git config --global user.name "wuchuheng"
-          git config --global user.email "root@wuchuheng.com"
-          git checkout -b main
-
-          git pull origin main
-          git add package.json
-          git commit -m "Bump version to ${GITHUB_REF#refs/tags/}"
-          git push origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

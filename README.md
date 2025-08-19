@@ -53,37 +53,22 @@ This template provides a type-safe, structured approach for Renderer-Main proces
 Here's the IPC communication flow visualized with UML:
 
 ```mermaid
-                                                                        Welcome Message Sequence
+sequenceDiagram
+participant Renderer as Renderer Process
+participant Preload as Preload Script
+participant Main as Main Process
+participant Handler as IPC Handler
+participant Service as Welcome Service
 
-     ┌────────────────┐                             ┌──────────────┐           ┌────────────┐               ┌───────────┐                         ┌──────────────┐
-     │Renderer Process│                             │PreLoad Script│           │Main Process│               │IPC Handler│                         │WelcomeService│
-     └────────┬───────┘                             └───────┬──────┘           └──────┬─────┘               └─────┬─────┘                         └───────┬──────┘
-              │1. Call window.electron.welcome.getWelcome() │                         │                           │                                       │
-              │────────────────────────────────────────────>│                         │                           │                                       │
-              │                                             │                         │                           │                                       │
-              │                                             │  2. Send IPC message    │                           │                                       │
-              │                                             │────────────────────────>│                           │                                       │
-              │                                             │                         │                           │                                       │
-              │                                             │                         │3. Route to welcome.ipc.ts │                                       │
-              │                                             │                         │──────────────────────────>│                                       │
-              │                                             │                         │                           │                                       │
-              │                                             │                         │                           │4. Execute welcomeService.getWelcome() │
-              │                                             │                         │                           │──────────────────────────────────────>│
-              │                                             │                         │                           │                                       │
-              │                                             │                         │                           │               (Result)                │
-              │                                             │                         │                           │<─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │
-              │                                             │                         │                           │                                       │
-              │                                             │                         │         (Result)          │                                       │
-              │                                             │                         │<─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │                                       │
-              │                                             │                         │                           │                                       │
-              │                                             │   5. Return response    │                           │                                       │
-              │                                             │<─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │                           │                                       │
-              │                                             │                         │                           │                                       │
-              │             (Welcome Message)               │                         │                           │                                       │
-              │<─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ │                         │                           │                                       │
-     ┌────────┴───────┐                             ┌───────┴──────┐           ┌──────┴─────┐               ┌─────┴─────┐                         ┌───────┴──────┐
-     │Renderer Process│                             │PreLoad Script│           │Main Process│               │IPC Handler│                         │WelcomeService│
-     └────────────────┘                             └──────────────┘           └────────────┘               └───────────┘                         └──────────────┘
+Renderer->>Preload: 1. Call window.electron.welcome.getWelcome()
+Preload->>Main: 2. Send IPC message
+Main->>Handler: 3. Route to welcome.ipc.ts
+Handler->>Service: 4. Execute welcomeService.getWelcome()
+Service-->>Handler:
+Handler-->>Main:
+Main-->>Preload: 5. Return response
+Preload-->>Renderer:
+
 ```
 
 1. **Declare interfaces** in `src/types/electron.d.ts`:

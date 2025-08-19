@@ -50,28 +50,24 @@ This template provides a type-safe, structured approach for Renderer-Main proces
 
 ### 🚀 Step-by-Step Guide
 
-Here's the simplified IPC communication flow:
+Here's the IPC communication flow visualized with UML:
 
-```
-Renderer Process         Main Process
-┌───────────────────┐   ┌───────────────────┐
-│ 1. Call method:    │   │ 3. Route to       │
-│    window.electron │   │    handler:       │
-│    .welcome.       │   │    src/main/ipc/  │
-│    getWelcome()    │   │                   │
-│         │          │   │         │         │
-│         │ 2. Preload│   │         │         │
-│         │ bridge    │   │         │         │
-│         ────────────┼──▶         │         │
-│                   │ │   │         ▼         │
-│                   │ │   │ 4. Execute:       │
-│                   │ │   │    welcomeService │
-│                   │ │   │    .getWelcome()  │
-│                   │ │   │         │         │
-│                   │ │   │         ◀─────────┼───
-│ 5. Receive       ◀┼─┼───┼─────────┘         │
-│    response       │   │   │                   │
-└───────────────────┘   └───────────────────┘
+```mermaid
+sequenceDiagram
+    participant Renderer as Renderer Process
+    participant Preload as Preload Script
+    participant Main as Main Process
+    participant Handler as IPC Handler
+    participant Service as Welcome Service
+
+    Renderer->>Preload: 1. Call window.electron.welcome.getWelcome()
+    Preload->>Main: 2. Send IPC message
+    Main->>Handler: 3. Route to welcome.ipc.ts
+    Handler->>Service: 4. Execute welcomeService.getWelcome()
+    Service-->>Handler:
+    Handler-->>Main:
+    Main-->>Preload: 5. Return response
+    Preload-->>Renderer:
 ```
 
 1. **Declare interfaces** in `src/types/electron.d.ts`:

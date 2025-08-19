@@ -40,6 +40,21 @@ async function main() {
     }
 
     fs.cpSync(templatePath, projectName, { recursive: true, force: true });
+    // Copy all dotfiles and dot-directories from template to target
+    const dotItems = fs
+      .readdirSync(templatePath, { withFileTypes: true })
+      .filter(
+        (dirent) => dirent.name.startsWith('.') && dirent.name !== '.' && dirent.name !== '..'
+      );
+    for (const item of dotItems) {
+      const src = path.join(templatePath, item.name);
+      const dest = path.join(projectName, item.name);
+      if (item.isDirectory()) {
+        fs.cpSync(src, dest, { recursive: true, force: true });
+      } else {
+        fs.copyFileSync(src, dest);
+      }
+    }
     console.log('✅ Project files copied successfully');
 
     // 2.2 go into the project directory and install dependencies.

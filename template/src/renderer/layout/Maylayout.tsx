@@ -3,12 +3,19 @@ import TitleBar from './TitleBar';
 import { ConfigProvider, theme } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Bootloading } from './Bootloading';
+import { MessageInstance } from 'antd/es/message/interface';
+import { message } from 'antd';
+import useMessage from 'antd/es/message/useMessage';
+
+export const MessageContext = React.createContext<MessageInstance | undefined>(undefined);
 
 type MainLayoutProps = {
   children: React.ReactNode;
 };
 export const MainLayout: React.FC<MainLayoutProps> = props => {
   const [isDarkTheme, setIsDarkTheme] = React.useState<boolean>(false);
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   // Initialize theme on component mount - default to light theme
   React.useEffect(() => {
@@ -41,12 +48,15 @@ export const MainLayout: React.FC<MainLayoutProps> = props => {
         algorithm: isDarkTheme ? theme.darkAlgorithm : theme.defaultAlgorithm,
       }}
     >
-      <div className="h-[100vh] bg-background-primary flex flex-col">
-        <TitleBar isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} onToggleLanguage={onToggleLanguage} />
-        <main className="flex-1 overflow-y-auto">
-          <Bootloading>{props.children}</Bootloading>
-        </main>
-      </div>
+      {contextHolder}
+      <MessageContext.Provider value={messageApi}>
+        <div className="flex h-[100vh] flex-col bg-background-primary">
+          <TitleBar isDarkTheme={isDarkTheme} onToggleTheme={onToggleTheme} onToggleLanguage={onToggleLanguage} />
+          <main className="flex-1 overflow-y-auto">
+            <Bootloading>{props.children}</Bootloading>
+          </main>
+        </div>
+      </MessageContext.Provider>
     </ConfigProvider>
   );
 };

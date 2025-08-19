@@ -44,6 +44,89 @@
 
 This project follows a well-structured layered architecture pattern:
 
+## 🔌 Inter-Process Communication (IPC)
+
+This template provides a type-safe, structured approach for Renderer-Main process communication. Here's how it works:
+
+### 🚀 Step-by-Step Guide
+
+Here's the simplified IPC communication flow:
+
+```
+Renderer Process         Main Process
+┌───────────────────┐   ┌───────────────────┐
+│ 1. Call method:    │   │ 3. Route to       │
+│    window.electron │   │    handler:       │
+│    .welcome.       │   │    src/main/ipc/  │
+│    getWelcome()    │   │                   │
+│         │          │   │         │         │
+│         │ 2. Preload│   │         │         │
+│         │ bridge    │   │         │         │
+│         ────────────┼──▶         │         │
+│                   │ │   │         ▼         │
+│                   │ │   │ 4. Execute:       │
+│                   │ │   │    welcomeService │
+│                   │ │   │    .getWelcome()  │
+│                   │ │   │         │         │
+│                   │ │   │         ◀─────────┼───
+│ 5. Receive       ◀┼─┼───┼─────────┘         │
+│    response       │   │   │                   │
+└───────────────────┘   └───────────────────┘
+```
+
+1. **Declare interfaces** in `src/types/electron.d.ts`:
+
+```ts
+declare global {
+  interface Window {
+    electron: {
+      welcome: {
+        getWelcome: () => Promise<Welcome>;
+      };
+    };
+  }
+}
+```
+
+2. **Configure IPC channels** in `src/shared/config.ts`:
+
+```ts
+export const config = {
+  welcome: {
+    getWelcome: createIpcChannel<void, Welcome>('welcome/getWelcome'),
+  },
+};
+```
+
+3. **Implement handler** in `src/main/ipc/`:
+
+```ts
+// welcome.ipc.ts
+config.welcome.getWelcome.handle(async () => {
+  return welcomeService.getWelcome();
+});
+```
+
+4. **Call from Renderer**:
+
+```ts
+const welcome = await window.electron.welcome.getWelcome();
+```
+
+### 🌟 Key Benefits
+
+- **Type Safety**: Full TypeScript support end-to-end
+- **Separation of Concerns**: Handlers stay in main process
+- **Discoverability**: All IPC endpoints in shared config
+- **Testability**: Handlers are pure functions
+
+### 🛠️ Best Practices
+
+- Group related methods under namespaces
+- Keep handlers thin - delegate to services
+- Use JSDoc for complex parameter types
+- Add error handling in services
+
 ```
 Windows Layer → IPC Layer → IPC Layout → Service Layout → Repository Layout
 ```

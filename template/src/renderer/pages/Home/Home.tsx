@@ -99,7 +99,7 @@ export const Home = () => {
         {/* Navigation Section */}
         <div className="rounded-lg bg-background-secondary p-6 shadow-lg">
           <h2 className="mb-4 text-xl font-bold text-primary-600 dark:text-primary-400">Navigation</h2>
-          
+
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
               <h3 className="mb-2 font-semibold text-primary-600 dark:text-primary-400">Current Page</h3>
@@ -107,7 +107,7 @@ export const Home = () => {
             </div>
 
             <div
-              className="cursor-pointer rounded-lg border border-primary-200 bg-primary-50 p-4 transition-all hover:bg-primary-100 dark:border-primary-800 dark:bg-primary-900/20 dark:hover:bg-primary-900/30"
+              className="dark:bg-primary-900/20 dark:hover:bg-primary-900/30 cursor-pointer rounded-lg border border-primary-200 bg-primary-50 p-4 transition-all hover:bg-primary-100 dark:border-primary-800"
               onClick={() => goToAbout()}
             >
               <h3 className="mb-2 font-semibold text-primary-600 dark:text-primary-400">About Page</h3>

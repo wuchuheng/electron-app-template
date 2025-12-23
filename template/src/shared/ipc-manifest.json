@@ -1,0 +1,42 @@
+{
+  "system": {
+    "bootloading": {
+      "channel": "system:bootloading",
+      "type": "event"
+    },
+    "getBootloadProgressing": {
+      "channel": "system:getBootloadProgressing",
+      "type": "invoke"
+    }
+  },
+  "tmp": {
+    "getTmp": {
+      "channel": "tmp:getTmp",
+      "type": "invoke"
+    },
+    "getTmp2": {
+      "channel": "tmp:getTmp2",
+      "type": "invoke"
+    }
+  },
+  "welcome": {
+    "getWelcome": {
+      "channel": "welcome:getWelcome",
+      "type": "invoke"
+    }
+  },
+  "window": {
+    "close": {
+      "channel": "window:close",
+      "type": "invoke"
+    },
+    "maximize": {
+      "channel": "window:maximize",
+      "type": "invoke"
+    },
+    "minimize": {
+      "channel": "window:minimize",
+      "type": "invoke"
+    }
+  }
+}

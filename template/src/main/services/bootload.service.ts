@@ -1,5 +1,6 @@
-import { bootloadingSubscription } from '../ipc/subscription';
+import bootloadingEvent from '../ipc/system/bootloading.ipc';
 import { logger } from '../utils/logger';
+import { BootloadingProgressing } from '@/types/electron';
 
 type TaskItem = {
   title: string;
@@ -8,12 +9,7 @@ type TaskItem = {
 
 const bootloadList: TaskItem[] = [];
 
-type BootloadingProcessing = {
-  title: string;
-  progress: number;
-};
-
-let currentProcessing: BootloadingProcessing = {
+let currentProcessing: BootloadingProgressing = {
   title: 'Init...',
   progress: 0,
 };
@@ -35,7 +31,7 @@ export const bootload = {
     const total = bootloadList.length;
     let current = 0;
 
-    bootloadingSubscription.broadcast(currentProcessing);
+    bootloadingEvent(currentProcessing);
 
     // 2.2 Load each item.
     for (const item of bootloadList) {
@@ -45,7 +41,7 @@ export const bootload = {
 
       // 2.2.2 Update the progress.
       const progress = Math.floor((current / total) * 100);
-      bootloadingSubscription.broadcast({ title: item.title, progress });
+      bootloadingEvent({ title: item.title, progress });
       currentProcessing = { title: item.title, progress };
 
       logger.verbose(`Task loaded: ${item.title} (${progress}%)`);

@@ -64,7 +64,7 @@ export const About: React.FC = () => {
               <h3 className="mb-2 font-semibold text-text-primary">{t('about.technology.frontend')}</h3>
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  React {packageJson.dependencies.react.replace('^', '')}
+                  React {(packageJson.dependencies as any).react?.replace('^', '') || (packageJson.devDependencies as any).react?.replace('^', '')}
                 </span>
                 <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                   TypeScript {packageJson.devDependencies.typescript.replace('^', '')}
@@ -73,7 +73,7 @@ export const About: React.FC = () => {
                   Tailwind CSS {packageJson.devDependencies.tailwindcss.replace('^', '')}
                 </span>
                 <span className="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                  Ant Design {packageJson.dependencies.antd.replace('^', '')}
+                  Ant Design {(packageJson.dependencies as any).antd?.replace('^', '') || (packageJson.devDependencies as any).antd?.replace('^', '')}
                 </span>
               </div>
             </div>
@@ -89,7 +89,7 @@ export const About: React.FC = () => {
                   SQLite3 {packageJson.dependencies['better-sqlite3'].replace('^', '')}
                 </span>
                 <span className="rounded-full bg-orange-100 px-3 py-1 text-sm font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-                  TypeORM {packageJson.dependencies.typeorm.replace('^', '')}
+                  TypeORM {(packageJson.dependencies as any).typeorm?.replace('^', '') || (packageJson.devDependencies as any).typeorm?.replace('^', '')}
                 </span>
               </div>
             </div>
@@ -108,7 +108,7 @@ export const About: React.FC = () => {
                   Prettier
                 </span>
                 <span className="rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
-                  i18next {packageJson.dependencies.i18next.replace('^', '')}
+                  i18next {(packageJson.dependencies as any).i18next?.replace('^', '') || (packageJson.devDependencies as any).i18next?.replace('^', '')}
                 </span>
               </div>
             </div>

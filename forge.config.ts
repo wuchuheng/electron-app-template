@@ -18,13 +18,14 @@ const config: ForgeConfig = {
   packagerConfig: {
     icon: path.join(iconDir, 'icon'),
     asar: {
+      // Force unpacking the native module from ASAR for execution
       unpack: '**/node_modules/better-sqlite3/**/*',
     },
+    // The Webpack plugin's default ignore is too aggressive for native modules.
+    // We need this explicit ignore to keep ONLY the bundle and necessary runtime modules.
     ignore: [
-      /^\/\.git/,
-      /^\/src/,
-      /^\/scripts/,
-      /^\/node_modules\/(?!better-sqlite3|bindings|file-uri-to-path)/,
+      /^\/(?!\.webpack|node_modules|package\.json)/,
+      /^\/node_modules\/(?!better-sqlite3|bindings|file-uri-to-path|electron-squirrel-startup)/,
     ],
   },
   rebuildConfig: {},

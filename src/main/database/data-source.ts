@@ -5,6 +5,9 @@ import { Welcome } from './entities/welcom';
 import { seedDatabase } from './seed';
 const databaseName = `${packageJson.name}-${packageJson.version}.sqlite`;
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const sqlite3 = require('better-sqlite3');
+
 let db: DataSource;
 
 let isInitialized = false;
@@ -18,6 +21,7 @@ export const initDB = async (): Promise<void> => {
 
     db = new DataSource({
       type: 'better-sqlite3',
+      driver: sqlite3,
       database: isDev ? 'dev.sqlite' : databaseName,
       entities: [Welcome],
       subscribers: [],

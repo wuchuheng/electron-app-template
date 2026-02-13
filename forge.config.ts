@@ -17,7 +17,15 @@ const iconDir = path.join(__dirname, 'src/renderer/assets/genLogo');
 const config: ForgeConfig = {
   packagerConfig: {
     icon: path.join(iconDir, 'icon'),
-    asar: true,
+    asar: {
+      unpack: '**/node_modules/better-sqlite3/**/*',
+    },
+    ignore: [
+      /^\/\.git/,
+      /^\/src/,
+      /^\/scripts/,
+      /^\/node_modules\/(?!better-sqlite3|bindings|file-uri-to-path)/,
+    ],
   },
   rebuildConfig: {},
   makers: [

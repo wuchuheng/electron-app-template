@@ -3,7 +3,7 @@ import { logger } from '../utils/logger';
 import { EventHandler, registerEvent } from '../utils/ipc-helper';
 
 type IpcModule = {
-  default: ((...args: any[]) => any) & Partial<EventHandler>;
+  default: ((...args: unknown[]) => unknown) & Partial<EventHandler>;
 };
 
 const IPC_FILE_PATTERN = /\.ipc\.ts$/;
@@ -52,7 +52,7 @@ export const setupAllIpcHandlers = (): void => {
           return;
         }
 
-        ipcMain.handle(channel, async (_event, ...args) => handler(...args));
+        ipcMain.handle(channel, async (_event, ...args: unknown[]) => handler(...args));
         logger.verbose(`Registered IPC handler: ${moduleName}.${methodName}`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);

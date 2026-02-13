@@ -1,24 +1,22 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, createContext } from 'react';
 import TitleBar from './TitleBar';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Bootloading } from './Bootloading';
 import { MessageInstance } from 'antd/es/message/interface';
-import { message } from 'antd';
-import useMessage from 'antd/es/message/useMessage';
 
-export const MessageContext = React.createContext<MessageInstance | undefined>(undefined);
+export const MessageContext = createContext<MessageInstance | undefined>(undefined);
 
 type MainLayoutProps = {
   children: React.ReactNode;
 };
 export const MainLayout: React.FC<MainLayoutProps> = props => {
-  const [isDarkTheme, setIsDarkTheme] = React.useState<boolean>(false);
+  const [isDarkTheme, setIsDarkTheme] = useState<boolean>(false);
 
   const [messageApi, contextHolder] = message.useMessage();
 
   // Initialize theme on component mount - default to light theme
-  React.useEffect(() => {
+  useEffect(() => {
     // Remove any existing dark class to ensure light theme is default
     document.documentElement.classList.remove('dark');
     setIsDarkTheme(false);

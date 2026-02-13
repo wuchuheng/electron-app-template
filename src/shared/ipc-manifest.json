@@ -9,16 +9,6 @@
       "type": "invoke"
     }
   },
-  "tmp": {
-    "getTmp": {
-      "channel": "tmp:getTmp",
-      "type": "invoke"
-    },
-    "getTmp2": {
-      "channel": "tmp:getTmp2",
-      "type": "invoke"
-    }
-  },
   "welcome": {
     "getWelcome": {
       "channel": "welcome:getWelcome",

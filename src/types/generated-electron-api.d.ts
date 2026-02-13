@@ -12,10 +12,6 @@ type IpcModules = {
     bootloading: typeof import('../main/ipc/system/bootloading.ipc').default;
     getBootloadProgressing: typeof import('../main/ipc/system/getBootloadProgressing.ipc').default;
   };
-  tmp: {
-    getTmp: typeof import('../main/ipc/tmp/getTmp.ipc').default;
-    getTmp2: typeof import('../main/ipc/tmp/getTmp2.ipc').default;
-  };
   welcome: {
     getWelcome: typeof import('../main/ipc/welcome/getWelcome.ipc').default;
   };

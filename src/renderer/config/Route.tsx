@@ -1,13 +1,13 @@
-import { HashRouter, Route, Routes } from 'react-router-dom';
-import { Home } from '../pages/Home/Home';
+import { Route, Routes } from 'react-router-dom';
 import React from 'react';
-import { About } from '../pages/About/About';
+import { HomePage } from '../pages/Home/HomePage';
+import { AboutPage } from '../pages/About/AboutPage';
+import { UpdateDialog } from '../pages/Update/UpdateDialog';
 
-export const RouteRender: React.FC = () => (
-  <HashRouter>
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/about" element={<About />} />
-    </Routes>
-  </HashRouter>
+export const AppRoutes: React.FC = () => (
+  <Routes>
+    <Route path="/" element={<HomePage />} />
+    <Route path="/about" element={<AboutPage />} />
+    <Route path="/update-dialog" element={<UpdateDialog />} />
+  </Routes>
 );

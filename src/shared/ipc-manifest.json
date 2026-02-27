@@ -1,23 +1,61 @@
 {
+  "config": {
+    "get": {
+      "channel": "config:get",
+      "type": "invoke"
+    },
+    "onThemeUpdate": {
+      "channel": "config:onThemeUpdate",
+      "type": "event"
+    },
+    "save": {
+      "channel": "config:save",
+      "type": "invoke"
+    }
+  },
   "system": {
     "bootloading": {
       "channel": "system:bootloading",
       "type": "event"
     },
+    "getAppInfo": {
+      "channel": "system:getAppInfo",
+      "type": "invoke"
+    },
     "getBootloadProgressing": {
       "channel": "system:getBootloadProgressing",
       "type": "invoke"
+    },
+    "reloadHotkeys": {
+      "channel": "system:reloadHotkeys",
+      "type": "invoke"
     }
   },
-  "welcome": {
-    "getWelcome": {
-      "channel": "welcome:getWelcome",
+  "update": {
+    "check": {
+      "channel": "update:check",
       "type": "invoke"
+    },
+    "getState": {
+      "channel": "update:getState",
+      "type": "invoke"
+    },
+    "install": {
+      "channel": "update:install",
+      "type": "invoke"
+    },
+    "onStatusChange": {
+      "channel": "update:onStatusChange",
+      "type": "event"
     }
   },
   "window": {
     "close": {
       "channel": "window:close",
+      "type": "invoke"
+    },
+    "hide": {
+      "channel": "window:hide",
       "type": "invoke"
     },
     "maximize": {
@@ -26,6 +64,14 @@
     },
     "minimize": {
       "channel": "window:minimize",
+      "type": "invoke"
+    },
+    "onShow": {
+      "channel": "window:onShow",
+      "type": "event"
+    },
+    "openUpdate": {
+      "channel": "window:openUpdate",
       "type": "invoke"
     }
   }

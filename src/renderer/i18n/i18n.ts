@@ -1,52 +1,62 @@
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
+import { APP_NAME } from '@/shared/constants';
 
 // English translations
 const enTranslations = {
-  home: {
-    title: 'Welcome to electron-app-name!',
-    successMessage: 'Application running successfully!',
-    description:
-      'Your desktop application is now ready! Built with Electron, React, and Tailwind CSS for optimal performance.',
-    database: {
-      title: 'Database Status',
-      connected: 'SQLite3 Database Connected',
-      description: 'Embedded SQLite3 database is running smoothly and ready to store your data securely.',
-      messageCount: 'Messages in Database',
-      noMessages: 'No messages found in database',
-      hasMessages: 'messages stored successfully',
+  common: {
+    about: 'About',
+    openAbout: 'About',
+    madeWith: 'Made with Electron + React + TypeScript',
+  },
+  homepage: {
+    title: APP_NAME,
+    subtitle: 'Developer-friendly template with zero-config IPC discovery, auto-update, and modern tooling',
+    quickStart: {
+      title: 'Quick Start',
+      installDeps: 'Install dependencies',
+      startDev: 'Start development server',
+      buildProd: 'Build for production',
+      package: 'Package distributable',
+    },
+    ipc: {
+      title: 'Zero-Config IPC',
+      step1: '1. Create handler file',
+      step2: '2. Implement handler',
+      step3: '3. Types auto-generated!',
+      step4: '4. Use in renderer',
     },
     features: {
-      title: 'Key Features',
-      offline: {
-        title: 'Offline Ready',
-        description: 'Works completely offline with embedded SQLite3 database',
-      },
-      secure: {
-        title: 'Secure Storage',
-        description: 'Your data is stored locally and securely on your device',
-      },
-      fast: {
-        title: 'Lightning Fast',
-        description: 'Optimized performance with modern web technologies',
-      },
-      routing: {
-        title: 'React Router',
-        description: 'Modern client-side routing with React Router for seamless navigation',
-      },
+      title: 'Built-in Features',
+      zeroConfigIpc: { title: 'Zero-Config IPC Discovery', desc: 'Auto-discovers IPC handlers from file structure' },
+      autoUpdate: { title: 'Auto-Update System', desc: 'Built-in update mechanism via electron-updater' },
+      themeSystem: { title: 'Theme System', desc: 'Dark/Light/Custom theme support out of the box' },
+      localDatabase: { title: 'Local Database', desc: 'SQLite + TypeORM for persistent storage' },
+      systemTray: { title: 'System Tray', desc: 'Background running with tray integration' },
+      hotReload: { title: 'Hot Reload', desc: 'Fast development with Vite HMR' },
+      bootLoading: { title: 'Boot Loading', desc: 'Progressive startup with loading states' },
+      framelessWindow: { title: 'Frameless Window', desc: 'Custom title bar with window controls' },
+      i18nSupport: { title: 'i18n Support', desc: 'Multi-language support (EN/ZH)' },
     },
-    gettingStarted: {
-      title: 'Getting Started',
-      description: 'Explore the features and functionality available in the application.',
+    projectStructure: {
+      title: 'Project Structure',
+      mainProcess: 'Main process',
+      ipcHandlers: 'IPC handlers',
+      services: 'Services',
+      database: 'TypeORM',
+      preload: 'Bridge',
+      renderer: 'React UI',
+      shared: 'Shared types',
     },
-    needHelp: {
-      title: 'Need Help?',
-      description: 'Check out our documentation or contact support for assistance.',
+    techStack: {
+      title: 'Tech Stack',
+      description1: 'This template provides a production-ready foundation for building cross-platform desktop applications with modern tooling.',
+      description2: 'All core features are pre-configured and documented. Simply clone and start building your app!',
     },
   },
   about: {
-    title: 'About electron-app-name',
+    title: `About ${APP_NAME}`,
     subtitle: 'Desktop Application Information',
     version: {
       title: 'Version Information',
@@ -90,52 +100,82 @@ const enTranslations = {
       backToHome: 'Back to Home',
     },
   },
+  update: {
+    available: {
+      title: 'Update Available',
+      message: 'A new version is available. It is being downloaded in the background.',
+    },
+    downloading: {
+      title: 'Downloading Update...',
+    },
+    ready: {
+      title: 'Update Ready to Install',
+      message: 'Version {{version}} has been downloaded. Restart the application to apply the update.',
+    },
+    releaseNotes: 'Release Notes:',
+    restartNow: 'Restart Now',
+    later: 'Later',
+    error: {
+      title: 'Update Error',
+      message: 'An error occurred while updating.',
+    },
+  },
 };
 
 // Chinese translations
 const zhTranslations = {
-  home: {
-    title: '欢迎使用 electron-app-name！',
-    successMessage: '应用程序运行成功！',
-    description: '您的桌面应用程序已准备就绪！使用 Electron、React 和 Tailwind CSS 构建，性能卓越。',
-    database: {
-      title: '数据库状态',
-      connected: 'SQLite3 数据库已连接',
-      description: '嵌入式 SQLite3 数据库运行顺畅，随时准备安全存储您的数据。',
-      messageCount: '数据库中的消息',
-      noMessages: '数据库中未找到消息',
-      hasMessages: '条消息已成功存储',
+  common: {
+    about: '关于',
+    openAbout: '关于',
+    madeWith: '使用 Electron + React + TypeScript 构建',
+  },
+  homepage: {
+    title: APP_NAME,
+    subtitle: '开发者友好的模板，具有零配置 IPC 发现、自动更新和现代化工具链',
+    quickStart: {
+      title: '快速开始',
+      installDeps: '安装依赖',
+      startDev: '启动开发服务器',
+      buildProd: '构建生产版本',
+      package: '打包分发',
+    },
+    ipc: {
+      title: '零配置 IPC',
+      step1: '1. 创建处理文件',
+      step2: '2. 实现处理函数',
+      step3: '3. 类型自动生成！',
+      step4: '4. 在渲染进程中使用',
     },
     features: {
-      title: '主要功能',
-      offline: {
-        title: '离线就绪',
-        description: '使用嵌入式 SQLite3 数据库完全离线工作',
-      },
-      secure: {
-        title: '安全存储',
-        description: '您的数据在设备上本地安全存储',
-      },
-      fast: {
-        title: '闪电般快速',
-        description: '使用现代网络技术优化性能',
-      },
-      routing: {
-        title: 'React Router',
-        description: '使用 React Router 实现现代客户端路由，提供无缝导航体验',
-      },
+      title: '内置功能',
+      zeroConfigIpc: { title: '零配置 IPC 发现', desc: '从文件结构自动发现 IPC 处理程序' },
+      autoUpdate: { title: '自动更新系统', desc: '通过 electron-updater 内置更新机制' },
+      themeSystem: { title: '主题系统', desc: '开箱即用的暗色/亮色/自定义主题支持' },
+      localDatabase: { title: '本地数据库', desc: 'SQLite + TypeORM 持久化存储' },
+      systemTray: { title: '系统托盘', desc: '后台运行与托盘集成' },
+      hotReload: { title: '热重载', desc: 'Vite HMR 快速开发' },
+      bootLoading: { title: '启动加载', desc: '渐进式启动与加载状态' },
+      framelessWindow: { title: '无边框窗口', desc: '自定义标题栏与窗口控制' },
+      i18nSupport: { title: '国际化支持', desc: '多语言支持 (EN/ZH)' },
     },
-    gettingStarted: {
-      title: '开始使用',
-      description: '探索应用程序中可用的功能和特性。',
+    projectStructure: {
+      title: '项目结构',
+      mainProcess: '主进程',
+      ipcHandlers: 'IPC 处理程序',
+      services: '服务',
+      database: 'TypeORM',
+      preload: '桥接',
+      renderer: 'React UI',
+      shared: '共享类型',
     },
-    needHelp: {
-      title: '需要帮助？',
-      description: '查看我们的文档或联系支持以获得帮助。',
+    techStack: {
+      title: '技术栈',
+      description1: '此模板为构建跨平台桌面应用程序提供了生产就绪的基础和现代化工具链。',
+      description2: '所有核心功能都经过预配置和文档化。只需克隆即可开始构建您的应用！',
     },
   },
   about: {
-    title: '关于 electron-app-name',
+    title: `关于 ${APP_NAME}`,
     subtitle: '桌面应用程序信息',
     version: {
       title: '版本信息',
@@ -179,6 +219,26 @@ const zhTranslations = {
       backToHome: '返回首页',
     },
   },
+  update: {
+    available: {
+      title: '发现新版本',
+      message: '新版本已发布，正在后台为您下载。',
+    },
+    downloading: {
+      title: '正在下载更新...',
+    },
+    ready: {
+      title: '更新已就绪',
+      message: '版本 {{version}} 已下载完成。请重启应用以应用更新。',
+    },
+    releaseNotes: '更新日志：',
+    restartNow: '立即重启',
+    later: '稍后',
+    error: {
+      title: '更新出错',
+      message: '更新过程中发生错误。',
+    },
+  },
 };
 
 // Initialize i18n
@@ -191,7 +251,7 @@ i18n
       zh: { translation: zhTranslations },
     },
     fallbackLng: 'zh',
-    debug: process.env.NODE_ENV === 'development',
+    debug: import.meta.env.DEV,
     interpolation: {
       escapeValue: false, // React already safes from XSS
     },

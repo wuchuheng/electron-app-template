@@ -1,13 +1,30 @@
-import { BrowserWindow, dialog } from 'electron';
+import { BrowserWindow, dialog, app } from 'electron';
 import net from 'node:net';
+import * as path from 'path';
 import { logger } from '../utils/logger';
+import { getDataSource } from '../database/data-source';
+import { Config } from '../database/entities/config.entity';
+import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '@/shared/constants';
 
-declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
-declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+const getMainWindowEntry = () => {
+  if (process.env.ELECTRON_RENDERER_URL) {
+    return process.env.ELECTRON_RENDERER_URL;
+  }
+  return `file://${path.join(__dirname, '../renderer/index.html')}`;
+};
 
-const parseEntryPort = () => {
+const getPreloadEntry = () => {
+  return path.join(__dirname, '../preload/index.js');
+};
+
+declare global {
+  // eslint-disable-next-line no-var
+  var isForceQuitting: boolean | undefined;
+}
+
+const parseEntryPort = (entryUrl: string) => {
   try {
-    const url = new URL(MAIN_WINDOW_WEBPACK_ENTRY);
+    const url = new URL(entryUrl);
     const port = Number(url.port) || (url.protocol === 'https:' ? 443 : 80);
     const isHttp = url.protocol === 'http:' || url.protocol === 'https:';
     const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(url.hostname);
@@ -71,11 +88,13 @@ const ensureRendererAvailable = async (entryUrl: string, entryMeta: ReturnType<t
 export const createWindow = async (): Promise<BrowserWindow> => {
   logger.info('Creating main window');
 
-  const entryMeta = parseEntryPort();
+  const mainWindowEntry = getMainWindowEntry();
+  const preloadEntry = getPreloadEntry();
+  const entryMeta = parseEntryPort(mainWindowEntry);
 
   if (process.env.NODE_ENV === 'development') {
     try {
-      await ensureRendererAvailable(MAIN_WINDOW_WEBPACK_ENTRY, entryMeta);
+      await ensureRendererAvailable(mainWindowEntry, entryMeta);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error(`Renderer entry not reachable: ${message}`);
@@ -86,21 +105,21 @@ export const createWindow = async (): Promise<BrowserWindow> => {
 
   try {
     // Create the browser window.
-    logger.info(`Creating BrowserWindow with preload path: ${MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY}`);
-    logger.info(`Main window entry: ${MAIN_WINDOW_WEBPACK_ENTRY}`);
+    logger.info(`Creating BrowserWindow with preload path: ${preloadEntry}`);
+    logger.info(`Main window entry: ${mainWindowEntry}`);
 
     const mainWindow = new BrowserWindow({
       height: 800 * 1.5,
       width: 1200 * 1.5,
+      icon: app.isPackaged ? path.join(process.resourcesPath, 'icon.ico') : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
       webPreferences: {
-        preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+        preload: preloadEntry,
         contextIsolation: true,
         nodeIntegration: false,
+        sandbox: false,
       },
       // Use frameless window for custom title bar
       frame: false,
-      // No need for autoHideMenuBar with frameless window
-      // autoHideMenuBar: true,
       titleBarStyle: 'hidden',
       // Add background color to prevent white flash during loading
       backgroundColor: '#1e1e2e',
@@ -111,6 +130,28 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     // Hide the menu bar completely
     mainWindow.setMenuBarVisibility(false);
     logger.info('Menu bar visibility set to false');
+
+    // Pipe renderer console messages into main process logger
+    mainWindow.webContents.on('console-message', (event, details) => {
+      // Filter out DevTools internal messages and empty/undefined messages
+      if (details.sourceId?.includes('devtools://')) return;
+      if (!details.message || details.message === 'undefined') return;
+      if (!details.sourceId) return; // Skip messages without source info (HMR, etc.)
+
+      const level = details.level;
+      const message = details.message;
+      const sourceId = details.sourceId || 'unknown';
+      const line = details.lineNumber || 'unknown';
+
+      if (level === 3) {
+        logger.error(`[RENDERER ERROR] ${message} (${sourceId}:${line})`);
+      } else if (level === 2) {
+        logger.warn(`[RENDERER WARN] ${message} (${sourceId}:${line})`);
+      } else {
+        logger.info(`[RENDERER] ${message} (${sourceId}:${line})`);
+      }
+    });
+
 
     // Verify contentView is created
     logger.info(`Main window contentView exists: ${!!mainWindow.contentView}`);
@@ -123,8 +164,8 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     logger.info(`Window is fullscreen: ${mainWindow.isFullScreen()}`);
 
     // and load the index.html of the app.
-    mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-    logger.info(`Loading URL: ${MAIN_WINDOW_WEBPACK_ENTRY}`);
+    mainWindow.loadURL(mainWindowEntry);
+    logger.info(`Loading URL: ${mainWindowEntry}`);
 
     // Give a clearer hint when the renderer fails to load (often a dev-server port clash)
     if (entryMeta?.isHttp && entryMeta.isLocalhost) {
@@ -134,7 +175,7 @@ export const createWindow = async (): Promise<BrowserWindow> => {
           if (!isMainFrame) return;
 
           const reachable = await isPortReachable(entryMeta.host, entryMeta.port);
-          const base = `${errorCode}: ${errorDescription} while loading ${validatedURL || MAIN_WINDOW_WEBPACK_ENTRY}`;
+          const base = `${errorCode}: ${errorDescription} while loading ${validatedURL || mainWindowEntry}`;
           const hint = reachable
             ? `Port ${entryMeta.port} is already in use by another process. Stop that process or set WEBPACK_DEV_SERVER_PORT to a free port.`
             : `Renderer dev server is not reachable at ${entryMeta.description}. It may have failed to start.`;
@@ -174,7 +215,23 @@ export const createWindow = async (): Promise<BrowserWindow> => {
       logger.info('Main window blurred');
     });
 
-    mainWindow.on('close', () => {
+    mainWindow.on('close', async event => {
+      if (!global.isForceQuitting) {
+        try {
+          const repo = getDataSource().getRepository(Config);
+          const configEntity = await repo.findOneBy({ key: CONFIG_KEYS.APP });
+          const appConfig = (configEntity?.value as AppConfig) || DEFAULT_APP_CONFIG;
+
+          if (appConfig.runInBackground) {
+            event.preventDefault();
+            mainWindow.hide();
+            logger.info('Main window hidden instead of closed');
+            return;
+          }
+        } catch (error) {
+          logger.error('Error checking runInBackground config:', error);
+        }
+      }
       logger.info('Main window closing');
     });
 
@@ -182,6 +239,55 @@ export const createWindow = async (): Promise<BrowserWindow> => {
   } catch (error) {
     logger.error(`Error creating main window: ${error instanceof Error ? error.message : String(error)}`);
     logger.error(`Error stack: ${error instanceof Error ? error.stack : 'No stack available'}`);
+    throw error;
+  }
+};
+
+/**
+ * Creates a dedicated, non-resizable dialog window for the software update process.
+ */
+export const createUpdateWindow = async (): Promise<BrowserWindow> => {
+  logger.info('Creating update window');
+
+  const mainWindowEntry = getMainWindowEntry();
+  const preloadEntry = getPreloadEntry();
+
+  try {
+    const updateWindow = new BrowserWindow({
+      width: 450,
+      height: 600,
+      resizable: false,
+      minimizable: false,
+      maximizable: false,
+      fullscreenable: false,
+      alwaysOnTop: true,
+      icon: app.isPackaged ? path.join(process.resourcesPath, 'icon.ico') : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
+      webPreferences: {
+        preload: preloadEntry,
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: false,
+      },
+      frame: false,
+      titleBarStyle: 'hidden',
+      backgroundColor: '#1e1e2e',
+      show: false,
+    });
+
+    // Navigate to the specific update-dialog route
+    updateWindow.loadURL(`${mainWindowEntry}#/update-dialog`);
+
+    updateWindow.once('ready-to-show', () => {
+      updateWindow.show();
+      // Optional: Open DevTools in dev mode for this window
+      // updateWindow.webContents.openDevTools({ mode: 'detach' });
+    });
+
+    updateWindow.setMenu(null);
+
+    return updateWindow;
+  } catch (error) {
+    logger.error(`Error creating update window: ${error instanceof Error ? error.message : String(error)}`);
     throw error;
   }
 };

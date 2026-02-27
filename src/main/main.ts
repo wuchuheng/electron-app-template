@@ -1,43 +1,94 @@
 import { app, BrowserWindow } from 'electron';
+import * as dotenv from 'dotenv';
+import * as childProcess from 'child_process';
 import { setupAllIpcHandlers } from './ipc';
 import { createWindow } from './windows/windowFactory';
-import { bootload } from './services/bootload.service';
 import { initDB } from './database/data-source';
 import { logger } from './utils/logger';
+import { createTray } from './utils/tray-helper';
+import { initUpdateService, checkForUpdates, handleAppQuitUpdate } from './services/update.service';
+import { registerBootTask, runBootTasks } from './services/bootload.service';
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
-  app.quit();
+declare global {
+  // eslint-disable-next-line no-var
+  var isForceQuitting: boolean | undefined;
 }
+
+// Ensure UTF-8 encoding on Windows
+if (process.platform === 'win32') {
+  process.env.LANG = 'en_US.UTF-8';
+  // Force set console code page to UTF-8 for child processes and logging
+  try {
+    // Using child_process module directly
+    childProcess.execSync('chcp 65001', { stdio: 'ignore' });
+  } catch {
+    // Fail silently if chcp is not available
+  }
+}
+
+dotenv.config();
+
+app.on('before-quit', () => {
+  global.isForceQuitting = true;
+  // Install pending update silently on quit (next launch will be new version)
+  handleAppQuitUpdate();
+});
 
 let mainWindow: BrowserWindow | null = null;
 
 export const getMainWindow = () => mainWindow;
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+/**
+ * Recreates the main window if it has been closed.
+ */
+export const recreateMainWindow = async () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.show();
+    mainWindow.focus();
+    return mainWindow;
+  }
+
+  try {
+    mainWindow = await createWindow();
+    mainWindow.on('closed', () => {
+      mainWindow = null;
+    });
+    return mainWindow;
+  } catch (error) {
+    logger.error(`Failed to recreate main window: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+};
+
 app.on('ready', async () => {
   try {
-    // 2. Handle the logic.
-    // 2.1 Create the main window.
-    mainWindow = await createWindow();
+    // 1. Initialize Tray
+    createTray(getMainWindow, recreateMainWindow);
 
-    // 2.2 Setup all IPC handlers
+    // 2. Create the main window.
+    mainWindow = await createWindow();
+    mainWindow.on('closed', () => {
+      mainWindow = null;
+    });
+
+    // 3. Setup all IPC handlers
     setupAllIpcHandlers();
 
-    // 2.3 Bootload the application
-    bootload.register({ title: 'Initializing Database ...', load: initDB });
-    await bootload.boot();
+    // 4. Initialize Update Service
+    initUpdateService();
+    checkForUpdates().catch(err => {
+      logger.error('Initial update check failed:', err);
+    });
+
+    // 5. Bootload the application
+    registerBootTask({ title: 'Initializing Database ...', load: initDB });
+    await runBootTasks();
   } catch (error) {
     logger.error(`Startup failed: ${error instanceof Error ? error.message : String(error)}`);
     app.quit();
   }
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
@@ -45,15 +96,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
-      .then(window => {
-        mainWindow = window;
-      })
-      .catch(error => {
-        logger.error(`Failed to re-create window: ${error instanceof Error ? error.message : String(error)}`);
-      });
+  if (mainWindow === null) {
+    recreateMainWindow();
   }
 });

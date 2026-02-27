@@ -10,17 +10,20 @@ type ElectronApi = Window['electron'];
 /**
  * Helper type to extract the parameter type from a function
  */
-type FirstParameter<T> = T extends (param: infer P) => unknown ? P : never;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FirstParameter<T> = T extends (param: infer P) => any ? P : never;
 
 /**
  * Maps a method in Window["electron"] to the appropriate channel type
  */
 type MapMethodToChannel<T> =
   // If it's a function that returns a Promise
-  T extends (...args: unknown[]) => Promise<infer R>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends (...args: any[]) => Promise<infer R>
     ? IpcChannel<FirstParameter<T>, R>
     : // If it's a function that takes a callback
-      T extends (callback: (data: infer D) => void) => unknown
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      T extends (callback: (data: infer D) => void) => any
       ? SubscriptionChannel<D>
       : // Fallback - should not happen with well-typed Window["electron"]
         never;
@@ -41,9 +44,11 @@ export type StrictConfig = {
  * @param config The source configuration object
  * @returns A new object with the same structure but each leaf value replaced with its .request property
  */
-export function createPreloadConfig<T extends Record<string, unknown>>(config: T): unknown {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createPreloadConfig<T extends Record<string, any>>(config: T): any {
   // Helper function to recursively process each level
-  function processValue(value: unknown): unknown {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function processValue(value: any): any {
     // If it's not an object or is null, return it as is
     if (value === null || typeof value !== 'object') {
       return value;
@@ -51,15 +56,15 @@ export function createPreloadConfig<T extends Record<string, unknown>>(config: T
 
     // If it has a request property, it's a leaf node (IPC channel)
     if ('request' in value) {
-      return (value as { request: unknown }).request;
+      return value.request;
     }
 
     // Otherwise it's a branch node, process its children
-    const result: Record<string, unknown> = {};
-    const obj = value as Record<string, unknown>;
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        result[key] = processValue(obj[key]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result: Record<string, any> = {};
+    for (const key in value) {
+      if (Object.prototype.hasOwnProperty.call(value, key)) {
+        result[key] = processValue(value[key]);
       }
     }
     return result;

@@ -41,7 +41,9 @@ const writeLog = (datetime: Date, level: LogLevel, source: Log['source'], messag
 };
 
 // Force chalk to use colors even on Windows terminals
-chalk.level > 0 || (chalk.level = 1);
+if (chalk.level === 0) {
+  chalk.level = 1;
+}
 
 type SOURCE = 'SYSTEM' | 'DEVICE';
 interface ILogger {

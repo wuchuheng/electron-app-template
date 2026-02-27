@@ -1,0 +1,4 @@
+provider: generic
+url: https://example.com/updates
+updaterCacheDirName: electron-app-template-updater
+# Note: Actual URL is set dynamically via setFeedURL() in update.service.ts

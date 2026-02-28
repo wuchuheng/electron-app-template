@@ -4,6 +4,7 @@ import { GithubOutlined, GlobalOutlined, CheckCircleOutlined, SyncOutlined, Arro
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useUpdateSystem } from '../../hooks/useUpdateSystem';
+import logo from '../../assets/genLogo/icon.png';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -76,22 +77,7 @@ export const AboutPage: React.FC = () => {
         <div className="rounded-2xl bg-white p-8 shadow-lg dark:bg-[#16162a]">
           {/* App Icon & Name */}
           <div className="mb-8 text-center">
-            <div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/30">
-              <svg
-                width="40"
-                height="40"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="2" y1="12" x2="22" y2="12" />
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-              </svg>
-            </div>
+            <img src={logo} alt="Logo" className="mb-4 inline-flex h-20 w-20 object-contain drop-shadow-lg" />
             <Title level={2} className="mb-1 dark:text-white">
               {info?.name}
             </Title>

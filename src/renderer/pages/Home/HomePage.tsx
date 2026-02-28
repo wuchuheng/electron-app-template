@@ -3,6 +3,7 @@ import { Typography, Card, Button, Divider } from 'antd';
 import { InfoCircleOutlined, RocketOutlined, ThunderboltOutlined, DatabaseOutlined, SkinOutlined, ReloadOutlined, LoadingOutlined, AppstoreOutlined, GlobalOutlined, CodeOutlined, FolderOutlined, ToolOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import logo from '../../assets/genLogo/icon.png';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -47,9 +48,7 @@ export const HomePage: React.FC = () => {
         {/* Hero Section */}
         <div className="text-center">
           <div className="mb-4 inline-flex items-center gap-3">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/30">
-              <ThunderboltOutlined className="text-3xl text-white" />
-            </div>
+            <img src={logo} alt="Logo" className="h-16 w-16 object-contain drop-shadow-lg" />
           </div>
           <Title level={1} className="mb-2 !text-4xl dark:!text-white">
             {t('homepage.title')}

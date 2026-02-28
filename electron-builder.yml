@@ -1,6 +1,7 @@
 # Filename format for all artifacts
 # Example: ${name}-${version}-${os}-${arch}.${ext}
 artifactName: "${name}-${version}-${os}-${arch}.${ext}"
+compression: maximum
 
 copyright: Copyright © 2026 wuchuheng
 

@@ -92,10 +92,10 @@ const showUpdateDialog = async (info: UpdateInfo) => {
       type: 'info',
       title: 'Update Ready',
       message: `Version ${info.version} has been downloaded.`,
-      detail: 'Restart the application to apply the update.',
-      buttons: ['Restart Now', 'Later'],
+      detail: 'The application must restart to apply the mandatory update.',
+      buttons: ['Restart Now'],
       defaultId: 0,
-      cancelId: 1,
+      cancelId: 0, // Prevent cancelling by closing the dialog
     });
     if (result.response === 0) {
       autoUpdater.quitAndInstall(false, true);

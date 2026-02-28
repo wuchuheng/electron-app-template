@@ -4,6 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import parseChangelog from 'changelog-parser';
 import * as dotenv from 'dotenv';
+import { parseDocument } from 'yaml';
 import { PLATFORM_MAP } from '../src/shared/platform-utils';
 
 // Load environment variables from .env file
@@ -94,25 +95,14 @@ async function processLatestYml(distDir: string, version: string): Promise<void>
 
   for (const ymlFile of ymlFiles) {
     const ymlPath = path.join(distDir, ymlFile);
-    let content = fs.readFileSync(ymlPath, 'utf-8');
-
-    // Add forceUpdateRanges if not present
-    if (!content.includes('forceUpdateRanges:')) {
-      content += '\nforceUpdateRanges: []\n';
-    }
+    const content = fs.readFileSync(ymlPath, 'utf-8');
+    const doc = parseDocument(content);
 
     // Extract and add release notes
     const releaseNotes = await extractReleaseNotes(version);
+    doc.set('releaseNotes', releaseNotes);
 
-    // Remove existing releaseNotes section
-    content = content.replace(/releaseNotes:\s*\n(\s+.*\n?)*/g, '');
-    content = content.replace(/releaseNotes:\s*[^\n]+\n/g, '');
-
-    // Add new release notes
-    const indentedNotes = releaseNotes.split('\n').map(line => `  ${line}`).join('\n');
-    content += `releaseNotes: |\n${indentedNotes}\n`;
-
-    fs.writeFileSync(ymlPath, content);
+    fs.writeFileSync(ymlPath, doc.toString());
     console.log(`   📝 Updated ${ymlFile} with release notes`);
   }
 }
@@ -144,10 +134,15 @@ function uploadFiles(distDir: string, platform: string, arch: string): void {
     const localHash = crypto.createHash('sha256').update(fs.readFileSync(localFile)).digest('hex');
 
     // Get remote hash (returns empty if file not found)
-    const remoteHash = execSync(
-      `ssh ${SSH_ALIAS} "sha256sum '${remotePath}/${file}' 2>/dev/null"`,
-      { encoding: 'utf-8', shell: true }
-    ).trim().split(/\s+/)[0] || '';
+    let remoteHash = '';
+    try {
+      remoteHash = execSync(
+        `ssh ${SSH_ALIAS} "sha256sum '${remotePath}/${file}' 2>/dev/null"`,
+        { encoding: 'utf-8', shell: true }
+      ).trim().split(/\s+/)[0];
+    } catch (e) {
+      // File doesn't exist or command failed, ignore and upload
+    }
 
     if (localHash === remoteHash) {
       console.log(`   ✅ ${file} - up to date`);

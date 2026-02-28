@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Progress } from 'antd';
 import packageJson from '../../../package.json';
-import logo from '../assets/logo.png';
+import logo from '../assets/genLogo/icon.png';
 import { BootloadingProgressing } from '../../types/electron';
 
 type BootloadingProps = {

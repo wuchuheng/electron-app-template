@@ -3,6 +3,7 @@ import { app, BrowserWindow, dialog } from 'electron';
 import { logger } from '../utils/logger';
 import { onStatusChange } from '../ipc/update/onStatusChange.ipc';
 import { createUpdateWindow } from '../windows/windowFactory';
+import { PLATFORM_MAP } from '@/shared/platform-utils';
 import type { UpdateState } from '@/shared/update-types';
 
 // --- Internal State ---
@@ -29,7 +30,8 @@ const getUpdateUrl = (): string => {
     throw new Error('Update server URL is not configured. Please set DEV_UPDATE_SERVER_URL or PROD_UPDATE_SERVER_URL in .env');
   }
 
-  return new URL(`${baseUrl}/${process.platform}/${process.arch}`).toString();
+  const platform = PLATFORM_MAP.get(process.platform) ?? process.platform;
+  return new URL(`${baseUrl}/${platform}/${process.arch}`).toString();
 };
 
 const setupListeners = () => {

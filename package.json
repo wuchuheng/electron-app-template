@@ -1,6 +1,6 @@
 {
   "name": "electron-app-template",
-  "productName": "Electron-App-Template",
+  "productName": "Electron App Template",
   "version": "1.0.0",
   "description": "Developer-friendly Electron app template with zero-config IPC discovery, auto-update, and more",
   "main": "./out/main/index.js",

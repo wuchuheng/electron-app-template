@@ -1,4 +1,3 @@
 provider: generic
+url: https://tmp.wareflow.cn
 updaterCacheDirName: electron-app-template-updater
-
-# URL is set dynamically via setFeedURL() in update.service.ts

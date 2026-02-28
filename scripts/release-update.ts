@@ -1,8 +1,10 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import parseChangelog from 'changelog-parser';
 import * as dotenv from 'dotenv';
+import { PLATFORM_MAP } from '../src/shared/platform-utils';
 
 // Load environment variables from .env file
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -116,7 +118,8 @@ async function processLatestYml(distDir: string, version: string): Promise<void>
 }
 
 /**
- * Upload files to remote server
+ * Upload files to remote server via scp
+ * Only uploads files with different hashes (or missing)
  */
 function uploadFiles(distDir: string, platform: string, arch: string): void {
   const remotePath = `${REMOTE_ROOT}/${platform}/${arch}`;
@@ -125,22 +128,33 @@ function uploadFiles(distDir: string, platform: string, arch: string): void {
   runCommand(`ssh ${SSH_ALIAS} "mkdir -p ${remotePath}"`);
 
   // Find files to upload
-  const filesToUpload = fs.readdirSync(distDir).filter(f =>
+  const files = fs.readdirSync(distDir).filter(f =>
     RELEASE_FILE_PATTERNS.some(pattern => f.endsWith(pattern) || f === pattern.replace('.', ''))
   );
 
-  if (filesToUpload.length === 0) {
+  if (files.length === 0) {
     console.error(`❌ No release files found in ${distDir}`);
     process.exit(1);
   }
 
-  console.log(`📤 Uploading ${filesToUpload.length} file(s):`);
-  for (const file of filesToUpload) {
-    console.log(`   - ${file}`);
-  }
+  console.log(`📤 Checking ${files.length} file(s)...`);
 
-  for (const file of filesToUpload) {
+  for (const file of files) {
     const localFile = path.join(distDir, file);
+    const localHash = crypto.createHash('sha256').update(fs.readFileSync(localFile)).digest('hex');
+
+    // Get remote hash (returns empty if file not found)
+    const remoteHash = execSync(
+      `ssh ${SSH_ALIAS} "sha256sum '${remotePath}/${file}' 2>/dev/null"`,
+      { encoding: 'utf-8', shell: true }
+    ).trim().split(/\s+/)[0] || '';
+
+    if (localHash === remoteHash) {
+      console.log(`   ✅ ${file} - up to date`);
+      continue;
+    }
+
+    console.log(`   📥 ${file} - uploading...`);
     runCommand(`scp "${localFile}" ${SSH_ALIAS}:${remotePath}/`);
   }
 }
@@ -166,7 +180,7 @@ async function main() {
   const packageJsonPath = path.resolve(__dirname, '../package.json');
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
   const version = packageJson.version;
-  const platform = process.platform;
+  const platform = PLATFORM_MAP.get(process.platform) ?? process.platform;
   const arch = process.arch;
 
   console.log(`\n📦 Version: ${version}`);
@@ -178,7 +192,7 @@ async function main() {
   runCommand('npm run manage package');
 
   // Step 2: Find dist directory
-  const distDir = path.resolve(__dirname, '../dist');
+  const distDir = path.resolve(__dirname, '../dist', platform, arch);
 
   if (!fs.existsSync(distDir)) {
     console.error(`❌ Dist directory not found: ${distDir}`);

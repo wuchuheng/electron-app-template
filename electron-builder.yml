@@ -1,6 +1,5 @@
 # Filename format for all artifacts
-# Uses ${name} (kebab-case) instead of ${productName} to avoid URL mismatch issues
-# Example: electron-app-template-1.0.0-win-x64.exe
+# Example: ${name}-${version}-${os}-${arch}.${ext}
 artifactName: "${name}-${version}-${os}-${arch}.${ext}"
 
 copyright: Copyright © 2026 wuchuheng
@@ -41,6 +40,6 @@ nsis:
 
 # This ensures electron-updater works correctly
 protocols:
-  name: electron-app-template
+  name: "${name}"
   schemes:
-    - electron-app-template
+    - ${name}

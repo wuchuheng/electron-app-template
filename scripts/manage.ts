@@ -20,6 +20,7 @@ async function execute() {
   switch (command) {
     case 'dev':
       execSync('npm run ipc:sync', { stdio: 'inherit', env });
+      execSync('tsx scripts/sync-app-name.ts', { stdio: 'inherit', env });
       run('electron-vite dev -w');
       break;
 

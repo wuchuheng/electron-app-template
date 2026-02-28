@@ -108,6 +108,9 @@ const showUpdateDialog = async (info: UpdateInfo) => {
 export const initUpdateService = () => {
   autoUpdater.autoDownload = false;
   autoUpdater.logger = logger;
+  // Use app name dynamically for cache directory
+  autoUpdater.updaterCacheDirName = `${app.name}-updater`;
+
   if (!app.isPackaged) autoUpdater.forceDevUpdateConfig = true;
 
   try {

@@ -26,6 +26,7 @@ async function execute() {
     case 'build':
       console.log('🏗️  Building production assets...');
       execSync('npm run ipc:sync', { stdio: 'inherit', env });
+      execSync('tsx scripts/sync-app-name.ts', { stdio: 'inherit', env });
       execSync('electron-vite build', { stdio: 'inherit', env });
       break;
 

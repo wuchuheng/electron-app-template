@@ -1,7 +1,13 @@
+# Filename format for all artifacts
+# Uses ${name} (kebab-case) instead of ${productName} to avoid URL mismatch issues
+# Example: electron-app-template-1.0.0-win-x64.exe
+artifactName: "${name}-${version}-${os}-${arch}.${ext}"
+
 copyright: Copyright © 2026 wuchuheng
 
 directories:
   buildResources: build
+  output: dist/${os}/${arch}
 
 files:
   - out/**/*
@@ -11,7 +17,7 @@ files:
   - node_modules/file-uri-to-path/**/*
 
 extraResources:
-  - from: src/main/app-update.yml
+  - from: app-update.yml
     to: app-update.yml
   - from: src/renderer/assets/genLogo/icon.ico
     to: icon.ico

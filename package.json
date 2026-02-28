@@ -1,6 +1,6 @@
 {
   "name": "electron-app-template",
-  "productName": "Electron App Template",
+  "productName": "Electron-App-Template",
   "version": "1.0.0",
   "description": "Developer-friendly Electron app template with zero-config IPC discovery, auto-update, and more",
   "main": "./out/main/index.js",
@@ -9,6 +9,7 @@
     "ipc:sync:watch": "node scripts/sync-ipc-types.js --watch",
     "ipc-gen:func": "node scripts/ipc-gen.js func",
     "ipc-gen:event": "node scripts/ipc-gen.js event",
+    "app:sync": "tsx scripts/sync-app-name.ts",
     "postinstall": "electron-builder install-app-deps",
     "prestart": "npm run ipc:sync",
     "manage": "tsx scripts/manage.ts",
@@ -69,7 +70,8 @@
     "tsx": "^4.21.0",
     "typescript": "^5.8.3",
     "vite": "^7.3.1",
-    "wait-on": "^9.0.4"
+    "wait-on": "^9.0.4",
+    "yaml": "^2.8.2"
   },
   "dependencies": {
     "better-sqlite3": "^11.10.0",

@@ -97,3 +97,5 @@ out/
 # Build output (compiled app and installers)
 dist/
 build/
+.gemini/
+gha-creds-*.json

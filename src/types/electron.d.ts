@@ -1,3 +1,15 @@
+export type BootloadingProgressing = {
+  progress: number;
+  title: string;
+};
+
+export type VerifyAuthorizationResult = {
+  isValid: boolean;
+  error?: string;
+  expiredAt?: number;
+};
+
+// Add common pagination types if needed for future features
 export type Pagination<T> = {
   page: number;
   total: number;
@@ -5,10 +17,7 @@ export type Pagination<T> = {
   items: T[];
 };
 
-export type BootloadingProgressing = {
-  progress: number;
-  title: string;
+export type PaginationInput = {
+  page: number;
+  limit: number;
 };
-
-// Generated window.electron API lives in generated-electron-api.d.ts
-/// <reference path="./generated-electron-api.d.ts" />

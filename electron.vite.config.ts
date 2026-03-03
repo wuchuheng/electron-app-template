@@ -3,17 +3,20 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 import { loadEnv } from 'vite';
 // eslint-disable-next-line import/no-unresolved
 import react from '@vitejs/plugin-react';
+import { getUpdateUrl } from './src/shared/update-config';
 
 export default defineConfig(({ mode }) => {
   // Load .env file based on mode (development/production)
   const env = loadEnv(mode, process.cwd(), '');
+
+  const prodUpdateUrl = getUpdateUrl(env);
 
   return {
     main: {
       plugins: [externalizeDepsPlugin()],
       define: {
         'process.env.DEV_UPDATE_SERVER_URL': JSON.stringify(env.DEV_UPDATE_SERVER_URL || ''),
-        'process.env.PROD_UPDATE_SERVER_URL': JSON.stringify(env.PROD_UPDATE_SERVER_URL || ''),
+        'process.env.PROD_UPDATE_SERVER_URL': JSON.stringify(prodUpdateUrl),
       },
       build: {
         rollupOptions: {

@@ -24,6 +24,31 @@ interface PackageJson {
 }
 
 // ===========================================
+// Logging Utility
+// ===========================================
+
+function getTimestamp() {
+  return new Date().toLocaleTimeString('en-GB', { hour12: false });
+}
+
+function log(level: 'info' | 'success' | 'warn' | 'error' | 'step', message: string) {
+  const reset = '\x1b[0m';
+  const bold = '\x1b[1m';
+  const colors = {
+    info: '\x1b[34m',    // Blue
+    success: '\x1b[32m', // Green
+    warn: '\x1b[33m',    // Yellow
+    error: '\x1b[31m',   // Red
+    step: '\x1b[35m'     // Magenta
+  };
+
+  const levelName = level.toUpperCase();
+  const coloredLevel = `${bold}${colors[level]}${levelName}${reset}`;
+  
+  console.log(`[${getTimestamp()}] ${coloredLevel}: ${message}`);
+}
+
+// ===========================================
 // Functions
 // ===========================================
 
@@ -82,7 +107,7 @@ function updateElectronBuilder(rootDir: string): void {
     }
   });
 
-  console.log(`  ✓ Updated electron-builder.yml (using \${name} placeholder)`);
+  log('info', 'Updated electron-builder.yml (using ${name} placeholder)');
 }
 
 
@@ -106,7 +131,7 @@ function updateUpdaterCacheDir(rootDir: string, relativePath: string, kebabName:
   const generatedContent = `${commentLine}\n${doc.toString()}`;
   fs.writeFileSync(filePath, generatedContent);
 
-  console.log(`  ✓ Updated ${relativePath}`);
+  log('info', `Updated ${relativePath}`);
 }
 
 /**
@@ -132,7 +157,7 @@ function updateReleaseScript(rootDir: string, kebabName: string): void {
   });
 
   fs.writeFileSync(filePath, updatedLines.join('\n'));
-  console.log(`  ✓ Updated scripts/release-update.ts`);
+  log('info', 'Updated scripts/release-update.ts');
 }
 
 // ===========================================
@@ -142,13 +167,14 @@ function updateReleaseScript(rootDir: string, kebabName: string): void {
 function main(): void {
   const rootDir = path.resolve(__dirname, '..');
 
-  console.log('🔄 Syncing app name from package.json...\n');
+  log('step', 'Syncing app name from package.json');
 
   const pkg = readPackageJson(rootDir);
-  const kebabName = toKebabCase(pkg.productName);
+  // Use pkg.name as the primary identifier (safe for directory names/protocols)
+  const kebabName = toKebabCase(pkg.name || pkg.productName);
 
-  console.log(`  Product Name: ${pkg.productName}`);
-  console.log(`  Kebab Case: ${kebabName}\n`);
+  console.log(`    - Product Name: ${pkg.productName}`);
+  console.log(`    - Kebab Case:   ${kebabName}\n`);
 
   // Update all files
   updateElectronBuilder(rootDir);
@@ -156,7 +182,7 @@ function main(): void {
   updateUpdaterCacheDir(rootDir, 'app-update.yml', kebabName);
   updateReleaseScript(rootDir, kebabName);
 
-  console.log('\n✅ App name synced successfully!');
+  log('success', 'App name synced successfully!');
 }
 
 main();

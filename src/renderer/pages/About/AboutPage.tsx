@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Space, Divider, Spin, Button, Progress, message } from 'antd';
-import { GithubOutlined, GlobalOutlined, CheckCircleOutlined, SyncOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Typography, Space, Divider, Spin, Button, Progress, message, Badge } from 'antd';
+import { CheckCircleOutlined, SyncOutlined, RocketOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { useUpdateSystem } from '../../hooks/useUpdateSystem';
+import { formatBytes, formatSpeed } from '@/shared/update-types';
 import logo from '../../assets/genLogo/icon.png';
 
 const { Title, Text, Paragraph } = Typography;
@@ -18,30 +18,31 @@ interface AppInfo {
 
 export const AboutPage: React.FC = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const [info, setInfo] = useState<AppInfo | null>(null);
+  const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastCheckTime, setLastCheckCheck] = useState<number | null>(null);
 
   const { status, info: updateInfo, progress, error, checkForUpdates, installAndRestart } = useUpdateSystem();
 
   useEffect(() => {
-    window.electron.system.getAppInfo().then((res) => {
-      setInfo(res);
+    window.electron.system.getAppInfo().then(res => {
+      setAppInfo(res);
       setLoading(false);
     });
   }, []);
 
   useEffect(() => {
     if (error) {
-      message.error('Update failed: ' + error);
+      message.error(t('about.error') + ': ' + error);
     }
-  }, [error]);
+  }, [error, t]);
 
   const handleCheckUpdate = async () => {
     try {
+      setLastCheckCheck(Date.now());
       await checkForUpdates();
     } catch {
-      message.error('Failed to check for updates');
+      message.error(t('about.error'));
     }
   };
 
@@ -49,124 +50,134 @@ export const AboutPage: React.FC = () => {
     try {
       await installAndRestart();
     } catch {
-      message.error('Failed to install update');
+      message.error(t('update.error'));
     }
   };
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center bg-background-primary">
         <Spin size="large" />
       </div>
     );
   }
 
-  return (
-    <div className="h-full overflow-auto bg-gradient-to-br from-slate-50 to-blue-50 p-8 dark:from-[#0f0f1a] dark:to-[#1a1a2e]">
-      <div className="mx-auto max-w-2xl">
-        {/* Back Button */}
-        <Button
-          type="default"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/')}
-          className="mb-6"
-        >
-          {t('about.navigation.backToHome')}
-        </Button>
+  const isLatest = status === 'idle' && lastCheckTime !== null;
 
-        <div className="rounded-2xl bg-white p-8 shadow-lg dark:bg-[#16162a]">
+  return (
+    <div className="h-full overflow-auto bg-background-primary p-8">
+      <div className="mx-auto max-w-2xl">
+        <div className="border-border rounded-2xl border bg-background-secondary p-8 shadow-sm">
           {/* App Icon & Name */}
           <div className="mb-8 text-center">
-            <img src={logo} alt="Logo" className="mb-4 inline-flex h-20 w-20 object-contain drop-shadow-lg" />
-            <Title level={2} className="mb-1 dark:text-white">
-              {info?.name}
+            <div className="mb-4 inline-block rounded-3xl bg-background-primary p-4 shadow-inner">
+              <img src={logo} alt="Logo" className="h-20 w-20 object-contain" />
+            </div>
+            <Title level={2} className="mb-1 text-text-primary">
+              {appInfo?.name || t('appName')}
             </Title>
-            <Text type="secondary" className="font-mono">
-              v{info?.version}
-            </Text>
+            <Space>
+              <Text code className="border-border bg-background-primary font-mono">
+                v{appInfo?.version}
+              </Text>
+              {isLatest && (
+                <Badge
+                  status="success"
+                  text={
+                    <Text type="success" className="text-xs">
+                      {t('about.latest')}
+                    </Text>
+                  }
+                />
+              )}
+            </Space>
           </div>
 
           {/* Update Section */}
-          <div className="mb-8 flex flex-col items-center gap-3">
-            {status === 'ready' && updateInfo ? (
-              <Button
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                onClick={handleInstall}
-                className="rounded-full bg-green-500 hover:bg-green-600 border-none"
-              >
-                Restart & Install v{updateInfo.version}
-              </Button>
-            ) : status === 'downloading' ? (
-              <div className="w-48">
-                <Progress percent={progress?.percent || 0} size="small" status="active" />
-                <Text className="text-xs" type="secondary">
-                  Downloading...
-                </Text>
-              </div>
-            ) : status === 'checking' ? (
-              <Space>
-                <SyncOutlined spin />
-                <Text type="secondary" className="text-xs">
-                  Checking for updates...
-                </Text>
-              </Space>
-            ) : status === 'error' ? (
-              <Button type="primary" ghost size="small" onClick={handleCheckUpdate} className="rounded-full">
-                Retry Check
-              </Button>
-            ) : (
-              <Button type="primary" ghost size="small" onClick={handleCheckUpdate} className="rounded-full">
-                Check for Updates
-              </Button>
-            )}
+          <div className="mb-10 flex flex-col items-center">
+            <div className="border-border w-full max-w-md rounded-xl border bg-background-primary p-6">
+              {status === 'ready' && updateInfo ? (
+                <div className="text-center">
+                  <Text className="mb-4 block font-medium text-text-primary">
+                    <RocketOutlined className="mr-2 text-primary-500" />
+                    {t('about.ready')} (v{updateInfo.version})
+                  </Text>
+                  <Button
+                    type="primary"
+                    block
+                    size="large"
+                    icon={<CheckCircleOutlined />}
+                    onClick={handleInstall}
+                    className="h-12 text-lg"
+                  >
+                    {t('about.restartBtn')}
+                  </Button>
+                </div>
+              ) : status === 'downloading' ? (
+                <div className="w-full">
+                  <div className="mb-2 flex items-end justify-between">
+                    <Text strong className="text-primary-500">
+                      {t('about.downloading')}
+                    </Text>
+                    <Text type="secondary" className="text-xs">
+                      {progress?.percent}%
+                    </Text>
+                  </div>
+                  <Progress
+                    percent={progress?.percent || 0}
+                    status="active"
+                    strokeColor={{ '0%': '#14b8a6', '100%': '#2dd4bf' }}
+                    showInfo={false}
+                  />
+                  <div className="mt-3 flex justify-between px-1">
+                    <div className="flex flex-col">
+                      <Text type="secondary" className="text-[10px] uppercase tracking-wider">
+                        {t('about.speed', { speed: '' }).replace(': ', '')}
+                      </Text>
+                      <Text className="font-mono text-xs text-text-primary">
+                        {formatSpeed(progress?.bytesPerSecond)}
+                      </Text>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <Text type="secondary" className="text-[10px] uppercase tracking-wider">
+                        {t('about.description')}
+                      </Text>
+                      <Text className="font-mono text-xs text-text-primary">
+                        {formatBytes(progress?.transferred || 0)} / {formatBytes(progress?.total || 0)}
+                      </Text>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Button
+                    type="primary"
+                    ghost
+                    size="large"
+                    loading={status === 'checking'}
+                    icon={status === 'checking' ? null : <SyncOutlined />}
+                    onClick={handleCheckUpdate}
+                    className="px-8"
+                  >
+                    {status === 'checking' ? t('about.checking') : t('about.checkUpdates')}
+                  </Button>
+                  {isLatest && (
+                    <div className="mt-3">
+                      <Text type="secondary" className="text-xs italic">
+                        {t('update.latest')}
+                      </Text>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Description */}
-          <Paragraph className="mb-8 text-center text-gray-600 dark:text-gray-400">
-            {info?.description || t('about.version.description')}
-          </Paragraph>
+          <Divider dashed />
 
-          <Divider />
-
-          {/* Info Grid */}
-          <div className="mb-8 grid grid-cols-2 gap-4 text-center">
-            <div>
-              <Text strong className="block dark:text-gray-300">
-                {t('about.version.author')}
-              </Text>
-              <Text type="secondary">{info?.author}</Text>
-            </div>
-            <div>
-              <Text strong className="block dark:text-gray-300">
-                {t('about.version.license')}
-              </Text>
-              <Text type="secondary">MIT</Text>
-            </div>
-          </div>
-
-          <Divider />
-
-          {/* Links */}
-          <div className="flex justify-center gap-4">
-            {info?.website && (
-              <a
-                href={info.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2 text-sm font-medium text-gray-700 transition-all hover:border-blue-500 hover:text-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:border-blue-500"
-              >
-                <GithubOutlined /> {t('about.contact.github')}
-              </a>
-            )}
-            <a
-              href="https://wuchuheng.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2 text-sm font-medium text-gray-700 transition-all hover:border-blue-500 hover:text-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:border-blue-500"
-            >
-              <GlobalOutlined /> {t('about.contact.support')}
-            </a>
+          {/* App Name & Description */}
+          <div className="mb-4 px-4 text-center">
+            <Paragraph className="italic leading-relaxed text-text-secondary">{appInfo?.description}</Paragraph>
           </div>
         </div>
       </div>

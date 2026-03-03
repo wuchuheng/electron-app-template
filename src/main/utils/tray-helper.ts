@@ -1,7 +1,8 @@
 import { app, Menu, Tray, nativeImage, BrowserWindow } from 'electron';
-import * as path from 'path';
 import { logger } from './logger';
 import { APP_NAME } from '@/shared/constants';
+import { getAppIconPath } from './path.util';
+import { t } from './i18n';
 
 let tray: Tray | null = null;
 
@@ -17,25 +18,18 @@ export const createTray = (
   if (tray) return tray;
 
   try {
-    // In packaged app, the icon is typically configured in electron-builder and embedded,
-    // but for the Tray, we need a physical file or native image.
-    // electron-builder copies extraResources if configured, but an easier way is to just use
-    // the source path in dev, and a dedicated resource path in prod.
-    const finalIconPath = app.isPackaged
-      ? path.join(process.resourcesPath, 'icon.ico')
-      : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico');
-
+    const finalIconPath = getAppIconPath();
     const icon = nativeImage.createFromPath(finalIconPath);
-    
+
     if (icon.isEmpty()) {
-       logger.error(`Tray icon is empty at path: ${finalIconPath}`);
+      logger.error(`Tray icon is empty at path: ${finalIconPath}`);
     }
-    
+
     tray = new Tray(icon);
 
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: 'Show App',
+        label: t('tray.showApp'),
         click: async () => {
           const mainWindow = getMainWindow();
           if (mainWindow && !mainWindow.isDestroyed()) {
@@ -44,17 +38,17 @@ export const createTray = (
           } else {
             await recreateMainWindow();
           }
-        }
+        },
       },
       { type: 'separator' },
       {
-        label: 'Quit',
+        label: t('tray.quit'),
         click: () => {
           // Use a custom property or global variable to indicate force quit
           global.isForceQuitting = true;
           app.quit();
-        }
-      }
+        },
+      },
     ]);
 
     tray.setToolTip(APP_NAME);

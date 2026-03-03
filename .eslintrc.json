@@ -1,4 +1,5 @@
 {
+    "root": true,
     "env": {
         "browser": true,
         "es6": true,
@@ -11,14 +12,18 @@
         "plugin:import/recommended",
         "plugin:import/electron",
         "plugin:import/typescript"
-    ],
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "project": "./tsconfig.json"
-    },
-    "settings": {
-        "import/resolver": {
-            "typescript": {}
-        }
-    }
-}
+      ],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+          "project": "./tsconfig.json"
+      },
+      "settings": {
+          "import/resolver": {
+              "typescript": {}
+          }
+      },
+      "rules": {
+          "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
+      }
+  }
+

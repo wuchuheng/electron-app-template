@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from 'electron';
+import path from 'path';
 import * as dotenv from 'dotenv';
 import * as childProcess from 'child_process';
 import { setupAllIpcHandlers } from './ipc';
@@ -8,6 +9,7 @@ import { logger } from './utils/logger';
 import { createTray } from './utils/tray-helper';
 import { initUpdateService, checkForUpdates, handleAppQuitUpdate } from './services/update.service';
 import { registerBootTask, runBootTasks } from './services/bootload.service';
+import { getBaseDir } from './utils/path.util';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -27,6 +29,10 @@ if (process.platform === 'win32') {
 }
 
 dotenv.config();
+
+// Standardize application directory structure
+// Move Chromium's internal system files into a subfolder to keep the root clean
+app.setPath('userData', path.join(getBaseDir(), 'system'));
 
 app.on('before-quit', () => {
   global.isForceQuitting = true;
@@ -60,34 +66,62 @@ export const recreateMainWindow = async () => {
   }
 };
 
-app.on('ready', async () => {
-  try {
-    // 1. Initialize Tray
-    createTray(getMainWindow, recreateMainWindow);
+/**
+ * Set up the single instance lock to prevent multiple instances of the app from running.
+ */
+const setupSingleInstanceLock = () => {
+  const gotTheLock = app.requestSingleInstanceLock();
 
-    // 2. Create the main window.
-    mainWindow = await createWindow();
-    mainWindow.on('closed', () => {
-      mainWindow = null;
-    });
-
-    // 3. Setup all IPC handlers
-    setupAllIpcHandlers();
-
-    // 4. Initialize Update Service
-    initUpdateService();
-    checkForUpdates().catch(err => {
-      logger.error('Initial update check failed:', err);
-    });
-
-    // 5. Bootload the application
-    registerBootTask({ title: 'Initializing Database ...', load: initDB });
-    await runBootTasks();
-  } catch (error) {
-    logger.error(`Startup failed: ${error instanceof Error ? error.message : String(error)}`);
+  if (!gotTheLock) {
     app.quit();
+    return false;
   }
-});
+
+  app.on('second-instance', () => {
+    // Someone tried to run a second instance, we should focus our window.
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    } else {
+      recreateMainWindow();
+    }
+  });
+
+  return true;
+};
+
+// Initialize single instance lock
+if (setupSingleInstanceLock()) {
+  app.on('ready', async () => {
+    try {
+      // 1. Initialize Tray
+      createTray(getMainWindow, recreateMainWindow);
+
+      // 2. Create the main window.
+      mainWindow = await createWindow();
+      mainWindow.on('closed', () => {
+        mainWindow = null;
+      });
+
+      // 3. Setup all IPC handlers
+      setupAllIpcHandlers();
+
+      // 4. Initialize Update Service
+      initUpdateService();
+      checkForUpdates().catch(err => {
+        logger.error('Initial update check failed:', err);
+      });
+
+      // 5. Bootload the application
+      registerBootTask({ title: 'Initializing Database ...', load: initDB });
+      await runBootTasks();
+    } catch (error) {
+      logger.error(`Startup failed: ${error instanceof Error ? error.message : String(error)}`);
+      app.quit();
+    }
+  });
+}
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

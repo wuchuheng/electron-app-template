@@ -1,15 +1,12 @@
 import { useContext } from 'react';
-import { MessageContext } from '../layout/MainLayout';
+import { messageApiContext } from '../context/MessageContext';
 import { MessageInstance } from 'antd/es/message/interface';
 
-/**
- * Custom hook to access the antd message API.
- * @returns {MessageInstance} The message API instance.
- */
 export const useMessage = (): MessageInstance => {
-  const messageApi = useContext(MessageContext);
+  const messageApi = useContext(messageApiContext);
+
   if (!messageApi) {
-    throw new Error('MessageContext is not provided. Please ensure that useMessage is used within a MessageProvider.');
+    throw new Error('useMessage must be used within a messageApiContext.Provider');
   }
 
   return messageApi;

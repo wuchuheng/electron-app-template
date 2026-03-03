@@ -1,6 +1,5 @@
 import { app } from 'electron';
-import * as fs from 'fs';
-import * as path from 'path';
+import pkg from '../../../../package.json';
 
 export interface AppInfo {
   name: string;
@@ -11,29 +10,17 @@ export interface AppInfo {
 }
 
 const getAppInfo = async (): Promise<AppInfo> => {
-  const packageJsonPath = path.join(app.getAppPath(), 'package.json');
-  let description = '';
-  let productName = '';
-  let author = '';
-  let website = '';
+  const authorObj = pkg.author as { name: string } | string | undefined;
+  const author = typeof authorObj === 'object' ? authorObj.name : authorObj;
 
-  try {
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-    description = packageJson.description;
-    productName = packageJson.productName;
-    author = typeof packageJson.author === 'object' ? packageJson.author.name : packageJson.author;
-    website = packageJson.homepage || (typeof packageJson.repository === 'object' ? packageJson.repository.url : packageJson.repository);
-  } catch {
-    // Fallback if package.json is not accessible
-    description = 'AI-powered translation tool';
-  }
+  const website = pkg?.homepage || pkg.repository?.url || '';
 
   return {
-    name: productName || app.getName(),
+    name: (pkg.productName as string) || app.getName(),
     version: app.getVersion(),
-    description: description,
-    author: author || 'wuchuheng',
-    website: website || 'https://github.com/wuchuheng/tansaction-popup',
+    description: (pkg.description as string) || 'Electron application template',
+    author: author || 'Template Author',
+    website: website || 'https://github.com/example/template',
   };
 };
 

@@ -1,7 +1,7 @@
 {
   "name": "electron-app-template",
   "productName": "Electron App Template",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Developer-friendly Electron app template with zero-config IPC discovery, auto-update, and more",
   "main": "./out/main/index.js",
   "scripts": {
@@ -17,15 +17,28 @@
     "build": "npm run manage build",
     "package": "npm run manage package",
     "release": "tsx scripts/release-update.ts",
-    "lint": "eslint --ext .ts,.tsx .",
+    "release:test": "tsx scripts/release-update.ts --test",
+    "lint": "npm run typecheck && eslint --ext .ts,.tsx .",
+    "typecheck": "node --stack-size=10000 ./node_modules/typescript/bin/tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
-    "gen:logo": "node scripts/gen-logo.js --input src/renderer/assets/logo.svg",
+    "gen:logo": "node scripts/gen-logo.js --input src/renderer/assets/logo.png",
     "release-update": "tsx scripts/release-update.ts"
   },
-  "keywords": [],
+  "homepage": "https://github.com/wuchuheng/electron-app-template",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wuchuheng/electron-app-template.git"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "typescript",
+    "tailwind",
+    "template"
+  ],
   "author": {
-    "name": "wuchuheng",
-    "email": "root@wuchuheng.com"
+    "name": "Template Author",
+    "email": "author@example.com"
   },
   "license": "MIT",
   "devDependencies": {
@@ -33,6 +46,8 @@
     "@tailwindcss/typography": "^0.5.16",
     "@types/better-sqlite3": "^7.6.13",
     "@types/changelog-parser": "^2.8.4",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.15.29",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
@@ -74,10 +89,18 @@
     "yaml": "^2.8.2"
   },
   "dependencies": {
+    "@ant-design/v5-patch-for-react-19": "^1.0.3",
+    "@decorators/express": "^3.0.0",
+    "@hello-pangea/dnd": "^18.0.1",
     "better-sqlite3": "^11.10.0",
     "chalk": "^4.1.2",
+    "cors": "^2.8.6",
     "electron-updater": "^6.7.3",
+    "express": "^4.22.1",
+    "iconv-lite": "^0.7.2",
+    "jschardet": "^3.1.4",
     "react-markdown": "^10.1.0",
+    "react-window": "^2.2.7",
     "semver": "^7.7.4",
     "typeorm": "^0.3.28"
   }

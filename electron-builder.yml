@@ -3,7 +3,7 @@
 artifactName: "${name}-${version}-${os}-${arch}.${ext}"
 compression: maximum
 
-copyright: Copyright © 2026 wuchuheng
+copyright: Copyright © 2026 Template Author
 
 directories:
   buildResources: build
@@ -21,6 +21,8 @@ extraResources:
     to: app-update.yml
   - from: src/renderer/assets/genLogo/icon.ico
     to: icon.ico
+  - from: src/assets/extensions
+    to: extensions
 
 win:
   target:

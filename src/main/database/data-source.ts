@@ -1,10 +1,8 @@
 import { DataSource } from 'typeorm';
-import packageJson from '../../../package.json';
 import { logger } from '../utils/logger';
-import { Config } from './entities/config.entity';
+import * as Entities from './entities';
 import { seedDatabase } from './seed';
-import { app } from 'electron';
-import path from 'path';
+import { getPaths } from '../utils/path.util';
 
 // Use require to ensure we get the constructor, avoiding ESM interop issues
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -16,7 +14,7 @@ const getDatabasePath = () => {
     return 'dev.sqlite';
   }
   // In production, database must be in userData to be writable
-  return path.join(app.getPath('userData'), `${packageJson.name}.sqlite`);
+  return getPaths().database;
 };
 
 let db: DataSource;
@@ -25,7 +23,6 @@ let isInitialized = false;
 export const getIsInitialized = () => isInitialized;
 
 export const initDB = async (): Promise<void> => {
-  const isDev = process.env.NODE_ENV === 'development';
   const dbPath = getDatabasePath();
 
   try {
@@ -33,22 +30,22 @@ export const initDB = async (): Promise<void> => {
 
     db = new DataSource({
       type: 'better-sqlite3',
-      driver: sqlite3, // Explicitly inject the driver
+      driver: sqlite3,
       database: dbPath,
-      entities: [Config],
+      entities: Object.values(Entities),
       subscribers: [],
       synchronize: true,
-      logging: isDev,
+      logging: false,
     });
 
     await db.initialize();
-
     isInitialized = true;
-    logger.info(`Database connection established to ${isDev ? 'dev.sqlite' : dbPath}`);
+    logger.info(`Database connection established to ${dbPath}`);
 
+    // Seed initial data
     await seedDatabase();
   } catch (error) {
-    logger.error(`Database initialization error: ${error instanceof Error ? error.message : String(error)}`);
+    logger.error(`Database initialization failed: ${error instanceof Error ? error.message : String(error)}`);
     throw error;
   }
 };

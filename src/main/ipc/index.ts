@@ -31,7 +31,9 @@ export const setupAllIpcHandlers = (): void => {
   logger.info('Setting up all IPC handlers');
 
   try {
+    // @ts-expect-error - import.meta.glob is provided by vite
     const ipcModules = import.meta.glob('./**/*.ipc.ts', { eager: true });
+
     const ipcModuleFiles = Object.keys(ipcModules);
 
     ipcModuleFiles.forEach((filename: string) => {

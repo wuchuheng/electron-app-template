@@ -1,10 +1,12 @@
-import { BrowserWindow, dialog, app } from 'electron';
+import { BrowserWindow, dialog } from 'electron';
 import net from 'node:net';
 import * as path from 'path';
 import { logger } from '../utils/logger';
 import { getDataSource } from '../database/data-source';
 import { Config } from '../database/entities/config.entity';
 import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '@/shared/constants';
+import { t } from '../utils/i18n';
+import { getAppIconPath } from '../utils/path.util';
 
 const getMainWindowEntry = () => {
   if (process.env.ELECTRON_RENDERER_URL) {
@@ -111,7 +113,8 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     const mainWindow = new BrowserWindow({
       height: 800 * 1.5,
       width: 1200 * 1.5,
-      icon: app.isPackaged ? path.join(process.resourcesPath, 'icon.ico') : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
+      title: t('appName'),
+      icon: getAppIconPath(),
       webPreferences: {
         preload: preloadEntry,
         contextIsolation: true,
@@ -132,26 +135,20 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     logger.info('Menu bar visibility set to false');
 
     // Pipe renderer console messages into main process logger
-    mainWindow.webContents.on('console-message', (event, details) => {
+    mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
       // Filter out DevTools internal messages and empty/undefined messages
-      if (details.sourceId?.includes('devtools://')) return;
-      if (!details.message || details.message === 'undefined') return;
-      if (!details.sourceId) return; // Skip messages without source info (HMR, etc.)
-
-      const level = details.level;
-      const message = details.message;
-      const sourceId = details.sourceId || 'unknown';
-      const line = details.lineNumber || 'unknown';
+      if (sourceId?.includes('devtools://')) return;
+      if (!message || message === 'undefined') return;
+      if (!sourceId) return; // Skip messages without source info (HMR, etc.)
 
       if (level === 3) {
         logger.error(`[RENDERER ERROR] ${message} (${sourceId}:${line})`);
       } else if (level === 2) {
         logger.warn(`[RENDERER WARN] ${message} (${sourceId}:${line})`);
       } else {
-        logger.info(`[RENDERER] ${message} (${sourceId}:${line})`);
+        logger.verbose(`[RENDERER] ${message} (${sourceId}:${line})`);
       }
     });
-
 
     // Verify contentView is created
     logger.info(`Main window contentView exists: ${!!mainWindow.contentView}`);
@@ -215,24 +212,34 @@ export const createWindow = async (): Promise<BrowserWindow> => {
       logger.info('Main window blurred');
     });
 
-    mainWindow.on('close', async event => {
-      if (!global.isForceQuitting) {
+    let isClosing = false;
+    mainWindow.on('close', event => {
+      if (global.isForceQuitting || isClosing) {
+        logger.info('Main window closing');
+        return;
+      }
+
+      event.preventDefault();
+
+      (async () => {
+        let shouldHide = false;
         try {
           const repo = getDataSource().getRepository(Config);
           const configEntity = await repo.findOneBy({ key: CONFIG_KEYS.APP });
           const appConfig = (configEntity?.value as AppConfig) || DEFAULT_APP_CONFIG;
-
-          if (appConfig.runInBackground) {
-            event.preventDefault();
-            mainWindow.hide();
-            logger.info('Main window hidden instead of closed');
-            return;
-          }
+          shouldHide = appConfig.runInBackground;
         } catch (error) {
           logger.error('Error checking runInBackground config:', error);
         }
-      }
-      logger.info('Main window closing');
+
+        if (shouldHide) {
+          mainWindow.hide();
+          logger.info('Main window hidden instead of closed');
+        } else {
+          isClosing = true;
+          mainWindow.close();
+        }
+      })();
     });
 
     return mainWindow;
@@ -256,12 +263,13 @@ export const createUpdateWindow = async (): Promise<BrowserWindow> => {
     const updateWindow = new BrowserWindow({
       width: 450,
       height: 600,
+      title: t('update.windowTitle', { appName: t('appName') }),
       resizable: false,
       minimizable: false,
       maximizable: false,
       fullscreenable: false,
       alwaysOnTop: true,
-      icon: app.isPackaged ? path.join(process.resourcesPath, 'icon.ico') : path.join(app.getAppPath(), 'src/renderer/assets/genLogo/icon.ico'),
+      icon: getAppIconPath(),
       webPreferences: {
         preload: preloadEntry,
         contextIsolation: true,

@@ -2,6 +2,31 @@ import { execSync, spawn, ChildProcess } from 'child_process';
 
 const command = process.argv[2]; // 'dev', 'build', 'package', 'publish'
 
+// ===========================================
+// Logging Utility
+// ===========================================
+
+function getTimestamp() {
+  return new Date().toLocaleTimeString('en-GB', { hour12: false });
+}
+
+function log(level: 'info' | 'success' | 'warn' | 'error' | 'step', message: string) {
+  const reset = '\x1b[0m';
+  const bold = '\x1b[1m';
+  const colors = {
+    info: '\x1b[34m',    // Blue
+    success: '\x1b[32m', // Green
+    warn: '\x1b[33m',    // Yellow
+    error: '\x1b[31m',   // Red
+    step: '\x1b[35m'     // Magenta
+  };
+
+  const levelName = level.toUpperCase();
+  const coloredLevel = `${bold}${colors[level]}${levelName}${reset}`;
+  
+  console.log(`[${getTimestamp()}] ${coloredLevel}: ${message}`);
+}
+
 if (process.platform === 'win32') {
   try {
     execSync('chcp 65001', { stdio: 'ignore' });
@@ -18,14 +43,43 @@ function run(cmd: string): ChildProcess {
 
 async function execute() {
   switch (command) {
-    case 'dev':
+    case 'dev': {
       execSync('npm run ipc:sync', { stdio: 'inherit', env });
       execSync('tsx scripts/sync-app-name.ts', { stdio: 'inherit', env });
-      run('electron-vite dev -w');
+      
+      log('step', 'Starting electron-vite dev server...');
+      
+      // Use a Promise to keep the execute() function alive until the child process exits
+      await new Promise<void>((resolve, reject) => {
+        const child = run('electron-vite dev');
+        
+        child.on('exit', (code) => {
+          if (code === 0 || code === null) {
+            resolve();
+          } else {
+            reject(new Error(`electron-vite exited with code ${code}`));
+          }
+        });
+
+        child.on('error', (err) => {
+          reject(err);
+        });
+
+        // Ensure child is killed when parent receives termination signals
+        const handleSignal = () => {
+          if (!child.killed) {
+            child.kill('SIGINT');
+          }
+        };
+
+        process.on('SIGINT', handleSignal);
+        process.on('SIGTERM', handleSignal);
+      });
       break;
+    }
 
     case 'build':
-      console.log('🏗️  Building production assets...');
+      log('step', 'Building production assets...');
       execSync('npm run ipc:sync', { stdio: 'inherit', env });
       execSync('tsx scripts/sync-app-name.ts', { stdio: 'inherit', env });
       execSync('electron-vite build', { stdio: 'inherit', env });
@@ -36,18 +90,7 @@ async function execute() {
       const isPublish = command === 'publish';
       const platform = process.platform;
 
-      console.log(`📦 Packaging for ${platform}/${process.arch}...`);
-
-      // Cleanup on Windows - kill any running instances
-      // if (platform === 'win32') {
-      //   console.log('🛡️  Cleaning up running processes...');
-      //   try {
-      //     execSync('taskkill /IM "Flow Translate.exe" /F', { stdio: 'ignore' });
-      //     execSync('taskkill /IM "electron.exe" /F', { stdio: 'ignore' });
-      //   } catch {
-      //     /* ignore error */
-      //   }
-      // }
+      log('step', `Packaging for ${platform}/${process.arch}...`);
 
       // 1. Build
       execSync('npm run manage build', { stdio: 'inherit', env });
@@ -58,12 +101,12 @@ async function execute() {
 
       const builderCmd = `npx electron-builder build ${builderFlag} ${publishFlag}`.trim();
 
-      console.log(`🏃 Executing: ${builderCmd}`);
+      log('info', `Executing: ${builderCmd}`);
       try {
         execSync(builderCmd, { stdio: 'inherit', env });
-        console.log(`\n✨ Success! Artifacts are in: dist/`);
+        log('success', 'Success! Artifacts are in: dist/');
       } catch {
-        console.error('\n❌ Build failed. Tip: Close any running instances of the app.');
+        log('error', 'Build failed. Tip: Close any running instances of the app.');
         process.exit(1);
       }
       break;
@@ -74,4 +117,7 @@ async function execute() {
   }
 }
 
-execute();
+execute().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

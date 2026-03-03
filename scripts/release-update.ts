@@ -2,230 +2,314 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import parseChangelog from 'changelog-parser';
 import * as dotenv from 'dotenv';
 import { parseDocument } from 'yaml';
 import { PLATFORM_MAP } from '../src/shared/platform-utils';
+import { getIsTestRelease, getRemoteRoot } from '../src/shared/update-config';
+import packageJson from '../package.json';
 
-// Load environment variables from .env file
+// Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // ===========================================
-// Configuration
+// Configuration & Types
 // ===========================================
 
-// SSH configuration from environment
+// Detect test release from command line flag --test
+const isTestRelease = getIsTestRelease();
+if (isTestRelease) {
+  process.env.IS_TEST_RELEASE = 'true';
+}
+
 const SSH_ALIAS = process.env.RELEASE_SSH_ALIAS || 'tc';
-const REMOTE_ROOT = process.env.RELEASE_REMOTE_ROOT || '/var/www/updates';
+const REMOTE_ROOT = getRemoteRoot(process.env);
+const RELEASE_FILE_PATTERNS = [
+  '.exe',
+  '.dmg',
+  '.AppImage',
+  '.snap',
+  '.deb',
+  '.rpm',
+  '.blockmap',
+  'latest.yml',
+  'latest-mac.yml',
+  'latest-linux.yml',
+];
 
-// Files to upload for release
-const RELEASE_FILE_PATTERNS = ['.exe', '.dmg', '.AppImage', '.snap', '.deb', '.rpm', '.blockmap', 'latest.yml', 'latest-mac.yml', 'latest-linux.yml'];
-
-// ===========================================
-// Types
-// ===========================================
-
-interface ChangelogVersion {
-  version: string | null;
-  title: string;
-  date: string | null;
-  body: string;
-  parsed: Record<string, string[]>;
+interface FileStatus {
+  name: string;
+  localPath: string;
+  hash: string;
+  isYml: boolean;
+  needsUpload: boolean;
 }
 
-interface ChangelogResult {
-  title: string;
-  description: string;
-  versions: ChangelogVersion[];
+interface ReleaseContext {
+  version: string;
+  platform: string;
+  arch: string;
+  distDir: string;
+  remotePath: string;
 }
 
 // ===========================================
-// Functions
+// Utility Functions
+// ===========================================
+
+function getTimestamp() {
+  return new Date().toLocaleTimeString('en-GB', { hour12: false });
+}
+
+function log(level: 'info' | 'success' | 'warn' | 'error' | 'step', message: string) {
+  const reset = '\x1b[0m';
+  const bold = '\x1b[1m';
+  const colors = {
+    info: '\x1b[34m', // Blue
+    success: '\x1b[32m', // Green
+    warn: '\x1b[33m', // Yellow
+    error: '\x1b[31m', // Red
+    step: '\x1b[35m', // Magenta
+  };
+
+  const levelName = level.toUpperCase();
+  const coloredLevel = `${bold}${colors[level]}${levelName}${reset}`;
+
+  console.log(`[${getTimestamp()}] ${coloredLevel}: ${message}`);
+}
+
+function runCommand(cmd: string, silent = false) {
+  if (!silent) log('info', `Executing: ${cmd}`);
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return execSync(cmd, { stdio: silent ? 'pipe' : 'inherit', shell: true as any, encoding: 'utf-8' });
+  } catch (error) {
+    if (!silent) log('error', `Command failed: ${cmd}`);
+    throw error;
+  }
+}
+
+function getFileHash(filePath: string): string {
+  const buffer = fs.readFileSync(filePath);
+  return crypto.createHash('sha256').update(buffer).digest('hex');
+}
+
+// ===========================================
+// Core Logic Functions
 // ===========================================
 
 /**
- * Parse CHANGELOG.md and extract release notes for a specific version
+ * Extract release notes from CHANGELOG.md
  */
 async function extractReleaseNotes(version: string): Promise<string> {
   const changelogPath = path.resolve(__dirname, '../CHANGELOG.md');
+  const defaultNotes = `### Version ${version}\n- Bug fixes and performance improvements.`;
 
-  if (!fs.existsSync(changelogPath)) {
-    console.warn('⚠️ CHANGELOG.md not found, using default release notes');
-    return `### Version ${version}\n- Bug fixes and performance improvements.`;
-  }
+  if (!fs.existsSync(changelogPath)) return defaultNotes;
 
   try {
-    const result = (await parseChangelog({
-      filePath: changelogPath,
-      removeMarkdown: false,
-    })) as ChangelogResult;
+    const content = fs.readFileSync(changelogPath, 'utf-8');
+    const escapedVersion = version.replace(/\./g, '\\.');
+    const versionRegex = new RegExp(`^##\\s+\\[?v?${escapedVersion}\\]?\\s+-\\s+\\d{4}-\\d{2}-\\d{2}`, 'm');
 
-    const versionEntry = result.versions.find(
-      v => v.version === version || v.version === `v${version}`
-    );
+    const match = content.match(versionRegex);
+    if (!match || match.index === undefined) return defaultNotes;
 
-    if (!versionEntry || !versionEntry.body) {
-      console.warn(`⚠️ Version ${version} not found in CHANGELOG.md`);
-      return `### Version ${version}\n- Bug fixes and performance improvements.`;
-    }
+    const startIndex = match.index + match[0].length;
+    const remainingContent = content.slice(startIndex);
+    const nextMatch = remainingContent.match(/^##\\s+/m);
 
-    console.log(`📄 Extracted release notes for version ${version}`);
-    return versionEntry.body.trim();
-  } catch (error) {
-    console.warn(`⚠️ Failed to parse CHANGELOG.md: ${error instanceof Error ? error.message : error}`);
-    return `### Version ${version}\n- Bug fixes and performance improvements.`;
-  }
-}
+    let body = nextMatch ? remainingContent.slice(0, nextMatch.index).trim() : remainingContent.trim();
+    body = body.split(/^---/m)[0].trim();
 
-function runCommand(cmd: string) {
-  console.log(`🏃 ${cmd}`);
-  try {
-    execSync(cmd, { stdio: 'inherit', shell: true });
+    return body || defaultNotes;
   } catch {
-    console.error(`❌ Command failed: ${cmd}`);
-    process.exit(1);
+    return defaultNotes;
   }
 }
 
 /**
- * Process latest.yml with release notes
+ * Update YML files in dist directory with release notes
  */
-async function processLatestYml(distDir: string, version: string): Promise<void> {
+async function updateYmlFiles(distDir: string, version: string) {
+  log('step', 'Processing manifest files...');
   const ymlFiles = fs.readdirSync(distDir).filter(f => f.endsWith('.yml'));
+  const releaseNotes = await extractReleaseNotes(version);
+  log('info', `Extracted release notes for ${version} (${releaseNotes.length} chars)`);
 
   for (const ymlFile of ymlFiles) {
     const ymlPath = path.join(distDir, ymlFile);
-    const content = fs.readFileSync(ymlPath, 'utf-8');
-    const doc = parseDocument(content);
-
-    // Extract and add release notes
-    const releaseNotes = await extractReleaseNotes(version);
+    const doc = parseDocument(fs.readFileSync(ymlPath, 'utf-8'));
     doc.set('releaseNotes', releaseNotes);
-
     fs.writeFileSync(ymlPath, doc.toString());
-    console.log(`   📝 Updated ${ymlFile} with release notes`);
+    log('info', `Updated ${ymlFile}`);
   }
 }
 
 /**
- * Upload files to remote server via scp
- * Only uploads files with different hashes (or missing)
+ * Scan dist directory and identify files to upload
  */
-function uploadFiles(distDir: string, platform: string, arch: string): void {
-  const remotePath = `${REMOTE_ROOT}/${platform}/${arch}`;
+function scanFiles(ctx: ReleaseContext): FileStatus[] {
+  const files = fs
+    .readdirSync(ctx.distDir)
+    .filter(f => RELEASE_FILE_PATTERNS.some(pattern => f.endsWith(pattern) || f === pattern.replace('.', '')));
 
-  // Ensure remote directory exists
-  runCommand(`ssh ${SSH_ALIAS} "mkdir -p ${remotePath}"`);
+  return files.map(name => ({
+    name,
+    localPath: path.join(ctx.distDir, name),
+    hash: getFileHash(path.join(ctx.distDir, name)),
+    isYml: name.endsWith('.yml'),
+    needsUpload: true,
+  }));
+}
 
-  // Find files to upload
-  const files = fs.readdirSync(distDir).filter(f =>
-    RELEASE_FILE_PATTERNS.some(pattern => f.endsWith(pattern) || f === pattern.replace('.', ''))
-  );
+/**
+ * Batch check remote file hashes via SSH
+ */
+function checkRemoteStatus(files: FileStatus[], ctx: ReleaseContext) {
+  log('step', `Checking ${files.length} file(s) on remote...`);
 
-  if (files.length === 0) {
-    console.error(`❌ No release files found in ${distDir}`);
-    process.exit(1);
-  }
+  try {
+    const fileNamesQuery = files.map(f => `'${f.name}'`).join(' ');
+    const remoteHashesRaw = runCommand(
+      `ssh ${SSH_ALIAS} "cd '${ctx.remotePath}' && sha256sum ${fileNamesQuery} 2>/dev/null || true"`,
+      true
+    ) as string;
 
-  console.log(`📤 Checking ${files.length} file(s)...`);
+    const remoteHashMap = new Map<string, string>();
+    remoteHashesRaw.split('\n').forEach(line => {
+      const parts = line.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        const hash = parts[0];
+        let name = parts.slice(1).join(' ');
+        if (name.startsWith('*')) name = name.slice(1);
+        remoteHashMap.set(name, hash);
+      }
+    });
 
-  for (const file of files) {
-    const localFile = path.join(distDir, file);
-    const localHash = crypto.createHash('sha256').update(fs.readFileSync(localFile)).digest('hex');
+    const upToDate: string[] = [];
+    const pending: string[] = [];
 
-    // Get remote hash (returns empty if file not found)
-    let remoteHash = '';
-    try {
-      remoteHash = execSync(
-        `ssh ${SSH_ALIAS} "sha256sum '${remotePath}/${file}' 2>/dev/null"`,
-        { encoding: 'utf-8', shell: true }
-      ).trim().split(/\s+/)[0];
-    } catch (e) {
-      // File doesn't exist or command failed, ignore and upload
+    for (const file of files) {
+      const remoteHash = remoteHashMap.get(file.name);
+      if (remoteHash === file.hash) {
+        file.needsUpload = false;
+        upToDate.push(file.name);
+      } else {
+        const reason = remoteHash ? 'changed (hash mismatch)' : 'missing on remote';
+        pending.push(`${file.name} - ${reason}`);
+      }
     }
 
-    if (localHash === remoteHash) {
-      console.log(`   ✅ ${file} - up to date`);
-      continue;
+    if (upToDate.length > 0) {
+      log('info', `Up-to-date files (${upToDate.length}):`);
+      upToDate.forEach(f => console.log(`    - ${f}`));
     }
 
-    console.log(`   📥 ${file} - uploading...`);
-    runCommand(`scp "${localFile}" ${SSH_ALIAS}:${remotePath}/`);
+    if (pending.length > 0) {
+      log('warn', `Pending changes (${pending.length}):`);
+      pending.forEach(f => console.log(`    - ${f}`));
+    }
+  } catch {
+    log('warn', 'Could not batch check remote hashes. Uploading all.');
   }
 }
 
+/**
+ * Upload a subset of files
+ */
+function uploadFiles(files: FileStatus[], ctx: ReleaseContext, label: string) {
+  const toUpload = files.filter(f => f.needsUpload);
+  if (toUpload.length === 0) {
+    log('success', `No ${label} need uploading.`);
+    return;
+  }
+
+  log('step', `Uploading ${label} (${toUpload.length} files)...`);
+  for (const file of toUpload) {
+    log('info', `Transferring ${file.name}...`);
+    const relativePath = path.relative(process.cwd(), file.localPath).replace(/\\/g, '/');
+    runCommand(`scp "${relativePath}" ${SSH_ALIAS}:"${ctx.remotePath}/"`);
+  }
+}
+
+/**
+ * Update local dev configuration
+ */
+function updateDevAppUpdateYml() {
+  const devUpdateUrl = process.env.DEV_UPDATE_SERVER_URL || 'https://static.example.com';
+  const devAppUpdatePath = path.resolve(__dirname, '../dev-app-update.yml');
+  const content = `provider: generic\nurl: ${devUpdateUrl}\nupdaterCacheDirName: ${packageJson.name}-updater\n`;
+  fs.writeFileSync(devAppUpdatePath, content);
+  log('success', 'dev-app-update.yml updated');
+}
+
 // ===========================================
-// Main
+// Main Execution
 // ===========================================
 
 async function main() {
-  console.log('='.repeat(60));
-  console.log('🚀 Release Update Script');
-  console.log('='.repeat(60));
+  log('info', 'Starting Release Update Process');
 
-  // Validate SSH configuration
-  if (!process.env.RELEASE_SSH_ALIAS) {
-    console.warn('⚠️ RELEASE_SSH_ALIAS not set, using default: tc');
-  }
-  if (!process.env.RELEASE_REMOTE_ROOT) {
-    console.warn('⚠️ RELEASE_REMOTE_ROOT not set');
-  }
-
-  // Read version from package.json
-  const packageJsonPath = path.resolve(__dirname, '../package.json');
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+  const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8'));
   const version = packageJson.version;
   const platform = PLATFORM_MAP.get(process.platform) ?? process.platform;
   const arch = process.arch;
+  const remotePath = `${REMOTE_ROOT}/${platform}/${arch}`;
 
-  console.log(`\n📦 Version: ${version}`);
-  console.log(`🖥️  Platform: ${platform}/${arch}`);
-  console.log(`🌐 Remote: ${SSH_ALIAS}:${REMOTE_ROOT}`);
+  const ctx: ReleaseContext = {
+    version,
+    platform,
+    arch,
+    distDir: path.resolve(__dirname, '../dist', platform, arch),
+    remotePath,
+  };
 
-  // Step 1: Build
-  console.log('\n--- Step 1: Building Package ---');
+  log('info', `Version: ${version} | Platform: ${platform}/${arch}`);
+  log('info', `Remote: ${SSH_ALIAS}:${remotePath}`);
+  if (isTestRelease) log('info', 'Mode: TEST RELEASE');
+
+  // 1. Build
+  log('step', 'Building Package...');
   runCommand('npm run manage package');
 
-  // Step 2: Find dist directory
-  const distDir = path.resolve(__dirname, '../dist', platform, arch);
-
-  if (!fs.existsSync(distDir)) {
-    console.error(`❌ Dist directory not found: ${distDir}`);
+  if (!fs.existsSync(ctx.distDir)) {
+    log('error', `Dist directory not found: ${ctx.distDir}`);
     process.exit(1);
   }
 
-  // Step 3: Process latest.yml with release notes
-  console.log('\n--- Step 2: Processing latest.yml ---');
-  await processLatestYml(distDir, version);
+  // 2. Process YML
+  await updateYmlFiles(ctx.distDir, version);
 
-  // Step 4: Upload files
-  console.log('\n--- Step 3: Uploading Files ---');
-  uploadFiles(distDir, platform, arch);
+  // 3. Scan and Check Status
+  runCommand(`ssh ${SSH_ALIAS} "mkdir -p '${remotePath}'"`, true);
+  const allFiles = scanFiles(ctx);
+  checkRemoteStatus(allFiles, ctx);
 
-  // Step 5: Prepare for local testing
-  console.log('\n--- Step 4: Preparing for Local Testing ---');
+  // 4. Upload Part 1: Binaries & Assets
+  uploadFiles(
+    allFiles.filter(f => !f.isYml),
+    ctx,
+    'binaries'
+  );
 
-  // Downgrade version for testing
-  packageJson.version = '1.0.0';
-  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-  console.log('✅ package.json version set to 1.0.0 for testing');
+  // 5. Upload Part 2: Manifests (latest.yml)
+  uploadFiles(
+    allFiles.filter(f => f.isYml),
+    ctx,
+    'manifests'
+  );
 
-  // Update dev-app-update.yml using DEV_UPDATE_SERVER_URL
-  const devUpdateUrl = process.env.DEV_UPDATE_SERVER_URL || 'https://static.tc.wuchuheng.com';
-  const devAppUpdatePath = path.resolve(__dirname, '../dev-app-update.yml');
-  fs.writeFileSync(devAppUpdatePath, `provider: generic
-url: ${devUpdateUrl}
-updaterCacheDirName: electron-app-template-updater
-`);
-  console.log('✅ dev-app-update.yml updated');
+  // 6. Finalize
+  updateDevAppUpdateYml();
 
-  // Summary
-  console.log('\n' + '='.repeat(60));
-  console.log('✨ Release Complete!');
-  console.log('='.repeat(60));
-  console.log(`\n📋 Uploaded to ${SSH_ALIAS}:${REMOTE_ROOT}/${platform}/${arch}`);
-  console.log(`\n👉 Test locally: npm start`);
-  console.log(`👉 Revert version: git checkout package.json`);
+  log('success', 'Release Complete!');
+  log('info', `Remote Path: ${SSH_ALIAS}:${remotePath}`);
+  log('info', 'Test locally: npm start');
+  log('info', 'Revert version: git checkout package.json');
 }
 
-main().catch(console.error);
+main().catch(error => {
+  console.error('\n❌ Release failed:');
+  console.error(error);
+  process.exit(1);
+});

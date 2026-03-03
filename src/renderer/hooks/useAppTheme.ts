@@ -22,5 +22,13 @@ export const useAppTheme = () => {
 
   const isDarkMode = theme.mode === 'dark' || (theme.mode === 'system' && isSystemDark);
 
-  return { theme, isDarkMode };
+  const toggleTheme = () => {
+    const nextMode: ThemeConfig['mode'] = isDarkMode ? 'light' : 'dark';
+    window.electron.config.save({
+      key: CONFIG_KEYS.THEME,
+      value: { ...theme, mode: nextMode },
+    });
+  };
+
+  return { theme, isDarkMode, toggleTheme };
 };

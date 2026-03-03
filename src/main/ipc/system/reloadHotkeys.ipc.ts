@@ -16,7 +16,7 @@ const reloadHotkeys = async () => {
   // Get hotkey config from database
   const repo = getDataSource().getRepository(Config);
   const configRow = await repo.findOneBy({ key: CONFIG_KEYS.HOTKEYS });
-  const hotkeyConfig = configRow?.value ? JSON.parse(configRow.value) : DEFAULT_HOTKEY;
+  const hotkeyConfig = configRow?.value ? JSON.parse(configRow.value as string) : DEFAULT_HOTKEY;
 
   // Register toggleWindow shortcut if defined
   if (hotkeyConfig?.toggleWindow) {

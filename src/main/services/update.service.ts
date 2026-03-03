@@ -4,7 +4,9 @@ import { logger } from '../utils/logger';
 import { onStatusChange } from '../ipc/update/onStatusChange.ipc';
 import { createUpdateWindow } from '../windows/windowFactory';
 import { PLATFORM_MAP } from '@/shared/platform-utils';
+import { getUpdateUrl as getBaseUpdateUrl } from '@/shared/update-config';
 import type { UpdateState } from '@/shared/update-types';
+import packageJson from '../../../package.json';
 
 // --- Internal State ---
 let state: UpdateState = {
@@ -14,20 +16,27 @@ let state: UpdateState = {
   error: null,
 };
 let updateWindowInstance: BrowserWindow | null = null;
+let updateCheckInterval: NodeJS.Timeout | null = null;
+let lastNotifiedVersion: string | null = null;
 
 const setState = (partial: Partial<UpdateState>) => {
   state = { ...state, ...partial };
   onStatusChange(state);
 };
 
-const getUpdateUrl = (): string => {
-  // Use environment variables (injected at build time via electron-vite define)
-  const baseUrl = app.isPackaged
-    ? process.env.PROD_UPDATE_SERVER_URL
-    : process.env.DEV_UPDATE_SERVER_URL;
+const getUpdateUrl = (): string | null => {
+  let baseUrl: string | undefined;
+
+  if (app.isPackaged) {
+    // In production, use the helper from shared config (supports --test flag via process.argv)
+    baseUrl = getBaseUpdateUrl(process.env as Record<string, string | undefined>);
+  } else {
+    // In development, use DEV_UPDATE_SERVER_URL directly
+    baseUrl = process.env.DEV_UPDATE_SERVER_URL;
+  }
 
   if (!baseUrl) {
-    throw new Error('Update server URL is not configured. Please set DEV_UPDATE_SERVER_URL or PROD_UPDATE_SERVER_URL in .env');
+    return null;
   }
 
   const platform = PLATFORM_MAP.get(process.platform) ?? process.platform;
@@ -43,7 +52,8 @@ const setupListeners = () => {
   autoUpdater.on('update-available', (info: UpdateInfo) => {
     setState({ status: 'downloading', info, error: null });
     logger.info(`Update v${info.version} found. Downloading...`);
-    autoUpdater.downloadUpdate().catch((err) => {
+    // Mandatory: Download starts immediately on discovery
+    autoUpdater.downloadUpdate().catch(err => {
       setState({ status: 'error', error: err.message });
       logger.error(`Download failed: ${err.message}`);
     });
@@ -54,13 +64,14 @@ const setupListeners = () => {
     logger.info('No update available.');
   });
 
-  autoUpdater.on('download-progress', (progress) => {
+  autoUpdater.on('download-progress', progress => {
     state = {
       ...state,
       progress: {
         percent: Math.round(progress.percent),
         transferred: progress.transferred,
         total: progress.total,
+        bytesPerSecond: progress.bytesPerSecond,
       },
     };
     onStatusChange(state);
@@ -70,12 +81,24 @@ const setupListeners = () => {
     setState({
       status: 'ready',
       info,
-      progress: { percent: 100, transferred: 0, total: 0 },
+      progress: {
+        percent: 100,
+        transferred: info.files?.[0]?.size || 0,
+        total: info.files?.[0]?.size || 0,
+        bytesPerSecond: 0,
+      },
     });
     logger.info(`Update v${info.version} downloaded.`);
-    showUpdateDialog(info).catch((err) => {
-      logger.error(`Failed to show update dialog: ${err.message}`);
-    });
+
+    // Only show dialog if we haven't notified for this version yet
+    if (lastNotifiedVersion !== info.version) {
+      lastNotifiedVersion = info.version;
+      showUpdateDialog(info).catch(err => {
+        logger.error(`Failed to show update dialog: ${err.message}`);
+      });
+    } else {
+      logger.info(`Update v${info.version} already notified, skipping dialog.`);
+    }
   });
 
   autoUpdater.on('error', (err: Error) => {
@@ -108,15 +131,38 @@ const showUpdateDialog = async (info: UpdateInfo) => {
 export const initUpdateService = () => {
   autoUpdater.autoDownload = false;
   autoUpdater.logger = logger;
-  // Use app name dynamically for cache directory
-  autoUpdater.updaterCacheDirName = `${app.name}-updater`;
+
+  const url = getUpdateUrl();
+  if (!url) {
+    logger.info('Update server URL not configured, update service will be disabled.');
+    return;
+  }
+
+  // Use normalized app name for cache directory to ensure differential updates work.
+  const cacheDirName = `${packageJson.name}-updater`;
+  // @ts-expect-error - updaterCacheDirName is not in the type definition but works at runtime
+  autoUpdater.updaterCacheDirName = cacheDirName;
+  logger.info(`Update cache directory set to: ${cacheDirName}`);
 
   if (!app.isPackaged) autoUpdater.forceDevUpdateConfig = true;
-
   try {
-    autoUpdater.setFeedURL({ provider: 'generic', url: getUpdateUrl() });
+    autoUpdater.setFeedURL({ provider: 'generic', url });
     setupListeners();
     logger.info('Update service initialized');
+
+    // Setup periodic check (every 1 minute)
+    if (updateCheckInterval) clearInterval(updateCheckInterval);
+    updateCheckInterval = setInterval(() => {
+      // Skip periodic check if an update is already ready or being downloaded
+      if (state.status === 'ready' || state.status === 'downloading') {
+        return;
+      }
+
+      logger.info('Performing periodic update check...');
+      checkForUpdates().catch(err => {
+        logger.error('Periodic update check failed:', err);
+      });
+    }, 1000 * 60);
   } catch (err) {
     logger.error(`Failed to initialize update service: ${err}`);
   }
@@ -147,6 +193,10 @@ export const openUpdateWindow = async () => {
 };
 
 export const checkForUpdates = async () => {
+  if (!getUpdateUrl()) {
+    logger.info('Skipping update check: No update server URL configured.');
+    return;
+  }
   try {
     return await autoUpdater.checkForUpdates();
   } catch (err) {

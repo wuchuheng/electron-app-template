@@ -17,14 +17,18 @@ export const getIsTestRelease = () => {
  * Gets the appropriate update URL based on whether it's a test release.
  */
 export const getUpdateUrl = (env: Record<string, string | undefined>) => {
-  return getIsTestRelease() ? env.TEST_UPDATE_SERVER_URL || '' : env.PROD_UPDATE_SERVER_URL || '';
+  if (getIsTestRelease()) {
+    return env.TEST_UPDATE_SERVER_URL || process.env.TEST_UPDATE_SERVER_URL || '';
+  }
+  return env.PROD_UPDATE_SERVER_URL || process.env.PROD_UPDATE_SERVER_URL || '';
 };
 
 /**
  * Gets the appropriate remote root for release upload based on whether it's a test release.
  */
 export const getRemoteRoot = (env: Record<string, string | undefined>) => {
-  return getIsTestRelease()
-    ? env.TEST_REMOTE_ROOT || '/var/www/updates/test'
-    : env.RELEASE_REMOTE_ROOT || '/var/www/updates';
+  if (getIsTestRelease()) {
+    return env.TEST_REMOTE_ROOT || process.env.TEST_REMOTE_ROOT || '/var/www/updates/test';
+  }
+  return env.RELEASE_REMOTE_ROOT || process.env.RELEASE_REMOTE_ROOT || '/var/www/updates';
 };

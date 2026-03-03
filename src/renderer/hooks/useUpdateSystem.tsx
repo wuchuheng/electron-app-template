@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { UpdateState } from '@/shared/update-types';
+import type { UpdateState } from '@/renderer/shared/update-types';
 
 /**
  * Single hook for all update-related state.

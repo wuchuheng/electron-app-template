@@ -1,7 +1,7 @@
 {
-  "name": "electron-app-template",
+  "name": "com.wuchuheng.electron.template",
   "productName": "Electron App Template",
-  "version": "1.0.2",
+  "version": "1.0.5-beta.0",
   "description": "Developer-friendly Electron app template with zero-config IPC discovery, auto-update, and more",
   "main": "./out/main/index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "start": "npm run manage dev",
     "build": "npm run manage build",
     "package": "npm run manage package",
+    "changeLog": "tsx scripts/change-log.ts --debug",
     "release": "tsx scripts/release-update.ts",
     "release:test": "tsx scripts/release-update.ts --test",
     "lint": "npm run typecheck && eslint --ext .ts,.tsx .",

@@ -1,11 +1,12 @@
 import { app } from 'electron';
 import path from 'path';
 import fs from 'fs';
+import packageJson from '@/../package.json';
 
 /**
  * The root directory for all application-related data.
  */
-export const getBaseDir = () => path.join(app.getPath('appData'), app.name);
+export const getBaseDir = () => path.join(app.getPath('appData'), packageJson.name);
 
 /**
  * Standardized utility for resolving all persistent data paths.

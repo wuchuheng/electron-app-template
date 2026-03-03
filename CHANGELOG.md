@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.0.5-beta.0] - 2026-03-04
+
+### 新增
+
+- **路径别名文档**: 在 `GEMINI.md` 中新增了关于 `@` 路径别名的使用说明及结构映射。
+- **环境配置支持**: `scripts/manage.ts` 新增对 `.env` 文件的加载支持，提升开发环境配置灵活性。
+- **关于页面组件**: 新增 `AppAboutContent.tsx` 组件，实现“关于”页面内容的模块化复用。
+
+### 优化
+
+- **项目命名规范**: 将项目 `name` 从 `electron-app-template` 统一更改为 `com.wuchuheng.electron.template`。
+- **路径别名配置**: 优化 `tsconfig.json` 中的 `@/*` 路径映射，使其优先匹配 `src/renderer` 目录，简化前端引用。
+- **数据目录映射**: 改进 `getBaseDir` 逻辑，采用 package name 作为数据存放目录，确保应用数据隔离的准确性。
+- **更新配置增强**: `getUpdateUrl` 和 `getRemoteRoot` 新增对 `process.env` 的降级支持。
+- **页面重构**: 重构 `AboutPage.tsx` 以调用新封装的 `AppAboutContent` 组件，保持代码简洁。
+- **构建配置标准化**: 统一了 `app-update.yml` 和 `dev-app-update.yml` 中的 `updaterCacheDirName` 命名。
+
+### 移除
+
+- **设置页面**: 移除了原有的 `SettingPage.tsx` 及其路由配置，简化初始模板功能。
+
 ## [1.0.15] - 2026-03-03
 
 ### 修复

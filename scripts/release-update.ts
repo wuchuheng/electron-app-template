@@ -7,6 +7,7 @@ import { parseDocument } from 'yaml';
 import { PLATFORM_MAP } from '../src/shared/platform-utils';
 import { getIsTestRelease, getRemoteRoot } from '../src/shared/update-config';
 import packageJson from '../package.json';
+import { extractReleaseNotes, log } from './change-log';
 
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -52,31 +53,6 @@ interface ReleaseContext {
   remotePath: string;
 }
 
-// ===========================================
-// Utility Functions
-// ===========================================
-
-function getTimestamp() {
-  return new Date().toLocaleTimeString('en-GB', { hour12: false });
-}
-
-function log(level: 'info' | 'success' | 'warn' | 'error' | 'step', message: string) {
-  const reset = '\x1b[0m';
-  const bold = '\x1b[1m';
-  const colors = {
-    info: '\x1b[34m', // Blue
-    success: '\x1b[32m', // Green
-    warn: '\x1b[33m', // Yellow
-    error: '\x1b[31m', // Red
-    step: '\x1b[35m', // Magenta
-  };
-
-  const levelName = level.toUpperCase();
-  const coloredLevel = `${bold}${colors[level]}${levelName}${reset}`;
-
-  console.log(`[${getTimestamp()}] ${coloredLevel}: ${message}`);
-}
-
 function runCommand(cmd: string, silent = false) {
   if (!silent) log('info', `Executing: ${cmd}`);
   try {
@@ -96,36 +72,6 @@ function getFileHash(filePath: string): string {
 // ===========================================
 // Core Logic Functions
 // ===========================================
-
-/**
- * Extract release notes from CHANGELOG.md
- */
-async function extractReleaseNotes(version: string): Promise<string> {
-  const changelogPath = path.resolve(__dirname, '../CHANGELOG.md');
-  const defaultNotes = `### Version ${version}\n- Bug fixes and performance improvements.`;
-
-  if (!fs.existsSync(changelogPath)) return defaultNotes;
-
-  try {
-    const content = fs.readFileSync(changelogPath, 'utf-8');
-    const escapedVersion = version.replace(/\./g, '\\.');
-    const versionRegex = new RegExp(`^##\\s+\\[?v?${escapedVersion}\\]?\\s+-\\s+\\d{4}-\\d{2}-\\d{2}`, 'm');
-
-    const match = content.match(versionRegex);
-    if (!match || match.index === undefined) return defaultNotes;
-
-    const startIndex = match.index + match[0].length;
-    const remainingContent = content.slice(startIndex);
-    const nextMatch = remainingContent.match(/^##\\s+/m);
-
-    let body = nextMatch ? remainingContent.slice(0, nextMatch.index).trim() : remainingContent.trim();
-    body = body.split(/^---/m)[0].trim();
-
-    return body || defaultNotes;
-  } catch {
-    return defaultNotes;
-  }
-}
 
 /**
  * Update YML files in dist directory with release notes

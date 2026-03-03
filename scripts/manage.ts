@@ -1,4 +1,9 @@
 import { execSync, spawn, ChildProcess } from 'child_process';
+import path from 'path';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const command = process.argv[2]; // 'dev', 'build', 'package', 'publish'
 

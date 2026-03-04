@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5-beta.1] - 2026-03-04
+
+### Added
+- **Monorepo Infrastructure**: Initialized NPM Workspaces and scaffolded `packages/core` and `packages/ui` using `tsup`.
+- **Migration Management**: Established `docs/migration/` roadmap and automated verification pipeline.
+- **Verification Tooling**: Added `npm run verify` command with a 60-second runtime survival test.
+
+### Fixed
+- **Type Safety**: Resolved path alias and import errors in `useUpdateSystem.tsx`.
+- **Linting**: Standardized ESLint and Prettier configurations for workspace isolation.
+
 ## [1.0.5-beta.0] - 2026-03-04
 
 ### 新增

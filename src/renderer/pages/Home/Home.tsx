@@ -16,6 +16,7 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { HelloWorld } from '@wuchuheng/electron-template-ui';
 import logo from '../../assets/genLogo/icon.png';
 
 const { Title, Text, Paragraph } = Typography;
@@ -105,6 +106,7 @@ export const Home: React.FC = () => {
 
         {/* Hero Section */}
         <div className="text-center">
+          <HelloWorld />
           <div className="mb-4 inline-flex items-center gap-3">
             <img src={logo} alt="Logo" className="h-16 w-16 object-contain drop-shadow-lg" />
           </div>

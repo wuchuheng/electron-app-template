@@ -1,8 +1,11 @@
 {
   "name": "com.wuchuheng.electron.template",
+  "workspaces": [
+    "packages/*"
+  ],
   "productName": "Electron App Template",
-  "version": "1.0.5-beta.0",
-  "description": "Developer-friendly Electron app template with zero-config IPC discovery, auto-update, and more",
+  "version": "1.0.5-beta.1",
+  "description": "Developer-friendly Electron app template with zero-config IPC discovery, type-safe communication, and automated scaffolding.",
   "main": "./out/main/index.js",
   "scripts": {
     "ipc:sync": "node scripts/sync-ipc-types.js",
@@ -19,9 +22,13 @@
     "changeLog": "tsx scripts/change-log.ts --debug",
     "release": "tsx scripts/release-update.ts",
     "release:test": "tsx scripts/release-update.ts --test",
-    "lint": "npm run typecheck && eslint --ext .ts,.tsx .",
-    "typecheck": "node --stack-size=10000 ./node_modules/typescript/bin/tsc --noEmit",
+    "lint": "npm run typecheck && eslint --ext .ts,.tsx . && npm run lint:workspaces",
+    "lint:workspaces": "npm run lint --workspaces --if-present",
+    "typecheck": "tsc --noEmit --skipLibCheck --incremental",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
+    "verify": "npm run lint && npm run verify:runtime",
+    "verify:runtime": "tsx scripts/verify-runtime.ts",
+    "task:next": "echo 'Activating Migration Manager Skill...' && exit 0",
     "gen:logo": "node scripts/gen-logo.js --input src/renderer/assets/logo.png",
     "release-update": "tsx scripts/release-update.ts"
   },

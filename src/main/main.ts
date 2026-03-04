@@ -16,6 +16,8 @@ declare global {
   var isForceQuitting: boolean | undefined;
 }
 
+import { getCoreHello } from '@wuchuheng/electron-template-core';
+
 // Ensure UTF-8 encoding on Windows
 if (process.platform === 'win32') {
   process.env.LANG = 'en_US.UTF-8';
@@ -97,6 +99,7 @@ if (setupSingleInstanceLock()) {
     try {
       // 1. Initialize Tray
       createTray(getMainWindow, recreateMainWindow);
+      logger.info(getCoreHello());
 
       // 2. Create the main window.
       mainWindow = await createWindow();

@@ -5,18 +5,15 @@ import * as childProcess from 'child_process';
 import { setupAllIpcHandlers } from './ipc';
 import { createWindow } from './windows/windowFactory';
 import { initDB } from './database/data-source';
-import { logger } from './utils/logger';
+import { logger, appPaths } from './core';
 import { createTray } from './utils/tray-helper';
 import { initUpdateService, checkForUpdates, handleAppQuitUpdate } from './services/update.service';
 import { registerBootTask, runBootTasks } from './services/bootload.service';
-import { getBaseDir } from './utils/path.util';
 
 declare global {
   // eslint-disable-next-line no-var
   var isForceQuitting: boolean | undefined;
 }
-
-import { getCoreHello } from '@wuchuheng/electron-template-core';
 
 // Ensure UTF-8 encoding on Windows
 if (process.platform === 'win32') {
@@ -34,7 +31,7 @@ dotenv.config();
 
 // Standardize application directory structure
 // Move Chromium's internal system files into a subfolder to keep the root clean
-app.setPath('userData', path.join(getBaseDir(), 'system'));
+app.setPath('userData', path.join(appPaths.storage, 'system'));
 
 app.on('before-quit', () => {
   global.isForceQuitting = true;
@@ -99,7 +96,6 @@ if (setupSingleInstanceLock()) {
     try {
       // 1. Initialize Tray
       createTray(getMainWindow, recreateMainWindow);
-      logger.info(getCoreHello());
 
       // 2. Create the main window.
       mainWindow = await createWindow();

@@ -1,5 +1,5 @@
 import bootloadingEvent from '../ipc/system/bootloading.ipc';
-import { logger } from '../utils/logger';
+import { logger } from '@/main/core';
 import { BootloadingProgressing } from '@/types/electron';
 
 type TaskItem = {

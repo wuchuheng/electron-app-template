@@ -1,4 +1,4 @@
-import { createEvent } from '@/main/utils/ipc-helper';
+import { createEvent } from '@wuchuheng/electron-template-core';
 import { BootloadingProgressing } from '@/types/electron';
 
 const bootloading = createEvent<BootloadingProgressing>();

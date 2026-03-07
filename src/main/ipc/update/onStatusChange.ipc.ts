@@ -1,4 +1,4 @@
-import { createEvent } from '../../utils/ipc-helper';
+import { createEvent } from '@wuchuheng/electron-template-core';
 import type { UpdateState } from '@/shared/update-types';
 
 export const onStatusChange = createEvent<UpdateState>();

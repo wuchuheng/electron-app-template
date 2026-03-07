@@ -1,8 +1,7 @@
 import { app, Menu, Tray, nativeImage, BrowserWindow } from 'electron';
-import { logger } from './logger';
+import { logger, t } from '@/main/core';
 import { APP_NAME } from '@/shared/constants';
-import { getAppIconPath } from './path.util';
-import { t } from './i18n';
+import { getAppIconPath } from '@wuchuheng/electron-template-core';
 
 let tray: Tray | null = null;
 
@@ -18,7 +17,7 @@ export const createTray = (
   if (tray) return tray;
 
   try {
-    const finalIconPath = getAppIconPath();
+    const finalIconPath = getAppIconPath(app.getAppPath(), process.resourcesPath, app.isPackaged);
     const icon = nativeImage.createFromPath(finalIconPath);
 
     if (icon.isEmpty()) {

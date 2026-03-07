@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
-import { logger } from '../utils/logger';
-import { EventHandler, registerEvent } from '../utils/ipc-helper';
+import { logger } from '@/main/core';
+import { EventHandler, registerEvent } from '@wuchuheng/electron-template-core';
 
 type IpcModule = {
   default: ((...args: unknown[]) => unknown) & Partial<EventHandler>;

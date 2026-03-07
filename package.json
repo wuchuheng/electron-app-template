@@ -8,8 +8,8 @@
   "description": "Developer-friendly Electron app template with zero-config IPC discovery, type-safe communication, and automated scaffolding.",
   "main": "./out/main/index.js",
   "scripts": {
-    "ipc:sync": "node scripts/sync-ipc-types.js",
-    "ipc:sync:watch": "node scripts/sync-ipc-types.js --watch",
+    "ipc:sync": "electron-template-core sync-ipc",
+    "ipc:sync:watch": "electron-template-core sync-ipc --watch",
     "ipc-gen:func": "node scripts/ipc-gen.js func",
     "ipc-gen:event": "node scripts/ipc-gen.js event",
     "app:sync": "tsx scripts/sync-app-name.ts",

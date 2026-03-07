@@ -1,4 +1,4 @@
-import { logger } from '../utils/logger';
+import { logger } from '@/main/core';
 
 /**
  * Seed the database with initial default data.

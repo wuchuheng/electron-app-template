@@ -1,6 +1,6 @@
 import { autoUpdater, UpdateInfo } from 'electron-updater';
 import { app, BrowserWindow, dialog } from 'electron';
-import { logger } from '../utils/logger';
+import { logger } from '@/main/core';
 import { onStatusChange } from '../ipc/update/onStatusChange.ipc';
 import { createUpdateWindow } from '../windows/windowFactory';
 import { PLATFORM_MAP } from '@/shared/platform-utils';

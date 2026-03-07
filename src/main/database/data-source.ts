@@ -1,8 +1,7 @@
 import { DataSource } from 'typeorm';
-import { logger } from '../utils/logger';
+import { logger, appPaths } from '@/main/core';
 import * as Entities from './entities';
 import { seedDatabase } from './seed';
-import { getPaths } from '../utils/path.util';
 
 // Use require to ensure we get the constructor, avoiding ESM interop issues
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -14,7 +13,7 @@ const getDatabasePath = () => {
     return 'dev.sqlite';
   }
   // In production, database must be in userData to be writable
-  return getPaths().database;
+  return appPaths.database;
 };
 
 let db: DataSource;

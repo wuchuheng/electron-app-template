@@ -1,12 +1,11 @@
-import { BrowserWindow, dialog } from 'electron';
+import { BrowserWindow, dialog, app } from 'electron';
 import net from 'node:net';
 import * as path from 'path';
-import { logger } from '../utils/logger';
+import { logger, t } from '@/main/core';
 import { getDataSource } from '../database/data-source';
 import { Config } from '../database/entities/config.entity';
 import { CONFIG_KEYS, AppConfig, DEFAULT_APP_CONFIG } from '@/shared/constants';
-import { t } from '../utils/i18n';
-import { getAppIconPath } from '../utils/path.util';
+import { getAppIconPath } from '@wuchuheng/electron-template-core';
 
 const getMainWindowEntry = () => {
   if (process.env.ELECTRON_RENDERER_URL) {
@@ -18,6 +17,8 @@ const getMainWindowEntry = () => {
 const getPreloadEntry = () => {
   return path.join(__dirname, '../preload/index.js');
 };
+
+const appIconPath = () => getAppIconPath(app.getAppPath(), process.resourcesPath, app.isPackaged);
 
 declare global {
   // eslint-disable-next-line no-var
@@ -114,7 +115,7 @@ export const createWindow = async (): Promise<BrowserWindow> => {
       height: 800 * 1.5,
       width: 1200 * 1.5,
       title: t('appName'),
-      icon: getAppIconPath(),
+      icon: appIconPath(),
       webPreferences: {
         preload: preloadEntry,
         contextIsolation: true,
@@ -269,7 +270,7 @@ export const createUpdateWindow = async (): Promise<BrowserWindow> => {
       maximizable: false,
       fullscreenable: false,
       alwaysOnTop: true,
-      icon: getAppIconPath(),
+      icon: appIconPath(),
       webPreferences: {
         preload: preloadEntry,
         contextIsolation: true,

@@ -46,7 +46,7 @@ const invokeTemplate = `const ${functionId} = async (_payload: unknown) => {
 export default ${functionId};
 `;
 
-const eventTemplate = `import { createEvent } from '@/main/utils/ipc-helper';
+const eventTemplate = `import { createEvent } from '@wuchuheng/electron-template-core';
 
 const ${functionId} = createEvent<unknown>();
 
@@ -59,4 +59,4 @@ fs.writeFileSync(destPath, template);
 console.log(`Created ${path.relative(projectRoot, destPath)}`);
 
 // Refresh manifest and types
-spawnSync('node', [path.join(__dirname, 'sync-ipc-types.js')], { stdio: 'inherit', shell: true });
+spawnSync('npm', ['run', 'ipc:sync'], { stdio: 'inherit', shell: true });

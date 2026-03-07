@@ -3,7 +3,7 @@ import { getDataSource } from '../../database/data-source';
 import { Config } from '../../database/entities/config.entity';
 import { onThemeUpdate } from './onThemeUpdate.ipc';
 import { CONFIG_KEYS, AppConfig } from '@/shared/constants';
-import { logger } from '../../utils/logger';
+import { logger } from '@/main/core';
 
 const saveConfig = async (payload: { key: string; value: unknown }) => {
   const repo = getDataSource().getRepository(Config);

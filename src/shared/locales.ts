@@ -107,6 +107,8 @@ export const enTranslations = {
     ready: 'Update ready, restart to apply',
     restartBtn: 'Restart and Install',
     error: 'Update check failed',
+    downloading: 'Downloading update...',
+    website: 'Visit our website',
   },
   tray: {
     showApp: 'Show App',
@@ -234,6 +236,8 @@ export const zhTranslations = {
     ready: '更新已就绪，重启以生效',
     restartBtn: '立即重启并安装',
     error: '更新检查失败',
+    downloading: '正在下载更新...',
+    viswebsite: '访问我们的网站',
   },
   tray: {
     showApp: '显示应用',

@@ -2,7 +2,7 @@ import { resolve } from 'path';
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 import { loadEnv } from 'vite';
 // eslint-disable-next-line import/no-unresolved
-import react from '@vitejs/plugin-react';
+import vue from '@vitejs/plugin-vue';
 import { getUpdateUrl } from './src/shared/update-config';
 
 export default defineConfig(({ mode }) => {
@@ -79,7 +79,7 @@ export default defineConfig(({ mode }) => {
           '@': resolve(__dirname, 'src'),
         },
       },
-      plugins: [react()],
+      plugins: [vue()],
     },
   };
 });

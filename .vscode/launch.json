@@ -1,11 +1,20 @@
 {
-    "configurations": [
-        {
-            "type": "node-terminal",
-            "name": "Run Script: start",
-            "request": "launch",
-            "command": "npm run start",
-            "cwd": "${workspaceFolder}"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Main Process",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "--", "--debug"],
+      "windows": {
+        "runtimeExecutable": "npm.cmd"
+      },
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "autoAttachChildProcesses": true,
+      "console": "integratedTerminal"
+    }
+  ]
 }

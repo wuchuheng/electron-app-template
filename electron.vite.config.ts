@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
         'process.env.PROD_UPDATE_SERVER_URL': JSON.stringify(prodUpdateUrl),
       },
       build: {
+        sourcemap: true,
         rollupOptions: {
           input: {
             index: resolve(__dirname, 'src/main/main.ts'),
@@ -52,6 +53,7 @@ export default defineConfig(({ mode }) => {
     preload: {
       plugins: [externalizeDepsPlugin()],
       build: {
+        sourcemap: true,
         rollupOptions: {
           input: {
             index: resolve(__dirname, 'src/preload/preload.ts'),
@@ -68,6 +70,7 @@ export default defineConfig(({ mode }) => {
       root: 'src/renderer',
       base: './', // Use relative paths for built assets
       build: {
+        sourcemap: true,
         rollupOptions: {
           input: {
             index: resolve(__dirname, 'src/renderer/index.html'),

@@ -47,6 +47,8 @@ function run(cmd: string): ChildProcess {
 }
 
 async function execute() {
+  const extraArgs = process.argv.slice(3).join(' ');
+
   switch (command) {
     case 'dev': {
       execSync('npm run ipc:sync', { stdio: 'inherit', env });
@@ -56,7 +58,7 @@ async function execute() {
       
       // Use a Promise to keep the execute() function alive until the child process exits
       await new Promise<void>((resolve, reject) => {
-        const child = run('electron-vite dev');
+        const child = run(`electron-vite dev ${extraArgs}`);
         
         child.on('exit', (code) => {
           if (code === 0 || code === null) {

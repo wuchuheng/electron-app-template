@@ -25,6 +25,10 @@ const props = withDefaults(defineProps<{
   className: '',
 })
 
+function openWebsite(url: string) {
+  window.open(url, '_blank')
+}
+
 const { t } = useI18n()
 const updateStore = useUpdateStore()
 const { status, info: updateInfo, progress, error } = storeToRefs(updateStore)
@@ -169,7 +173,7 @@ const isLatest = computed(() => status.value === 'idle' && lastCheckTime.value !
           <span v-if="appInfo?.website" class="text-text-secondary">
             <a
               href="#"
-              @click.prevent="window.open(appInfo.website, '_blank')"
+              @click.prevent="openWebsite(appInfo.website!)"
               class="text-primary-500 hover:text-primary-400 hover:underline"
             >
               {{ t('about.website') || 'Website' }}

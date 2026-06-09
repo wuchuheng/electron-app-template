@@ -13,7 +13,7 @@ export interface UpdateFileInfo {
 export interface UpdateInfo {
   version: string;
   releaseDate: string;
-  releaseNotes?: string | Array<{ version: string; note: string }>;
+  releaseNotes?: string | Array<{ version: string; note: string | null }> | null;
   files?: UpdateFileInfo[];
 }
 
@@ -34,10 +34,10 @@ export interface UpdateState {
 /**
  * Converts release notes to string format.
  */
-export function formatReleaseNotes(notes: string | Array<{ version: string; note: string }> | undefined): string {
+export function formatReleaseNotes(notes: string | Array<{ version: string; note: string | null }> | null | undefined): string {
   if (!notes) return '';
   if (typeof notes === 'string') return notes;
-  return notes.map(n => n.note).join('\n');
+  return notes.map(n => n.note ?? '').join('\n');
 }
 
 /**

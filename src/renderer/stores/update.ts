@@ -42,11 +42,7 @@ export const useUpdateStore = defineStore('update', () => {
   }
 
   async function installAndRestart() {
-    try {
-      await window.electron.update.install()
-    } catch (err) {
-      throw err
-    }
+    await window.electron.update.install()
   }
 
   async function openUpdateWindow() {

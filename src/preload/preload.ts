@@ -18,7 +18,9 @@ type IpcManifest = Record<
 >;
 
 const createRendererApi = (ipcManifest: IpcManifest) => {
-  const api: Record<string, Record<string, (...args: unknown[]) => unknown>> = {};
+  // Internal accumulator - final type is asserted at contextBridge call
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const api: Record<string, Record<string, (...args: any[]) => any>> = {};
 
   Object.entries(ipcManifest).forEach(([moduleName, methods]) => {
     api[moduleName] = {};

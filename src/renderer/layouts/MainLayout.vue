@@ -8,7 +8,7 @@ import TitleBar from './TitleBar.vue'
 import Bootloading from './Bootloading.vue'
 
 const route = useRoute()
-const { i18n } = useI18n()
+const { locale } = useI18n()
 const { isDarkMode } = useAppTheme()
 const updateStore = useUpdateStore()
 updateStore.init()
@@ -16,8 +16,8 @@ updateStore.init()
 const isUpdateDialog = computed(() => route.path.includes('/update-dialog'))
 
 function onToggleLanguage() {
-  const newLang = i18n.locale.value.startsWith('en') ? 'zh' : 'en'
-  i18n.locale.value = newLang
+  const newLang = locale.value.startsWith('en') ? 'zh' : 'en'
+  locale.value = newLang
 }
 </script>
 

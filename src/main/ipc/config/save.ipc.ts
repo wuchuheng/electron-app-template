@@ -22,7 +22,7 @@ const saveConfig = async (payload: { key: string; value: unknown }) => {
       });
       logger.info(`Auto-start set to: ${appConfig.autoStart}`);
     } catch (error) {
-      logger.error('Failed to set login item settings:', error);
+      logger.error('Failed to set login item settings: ' + String(error));
     }
   }
 

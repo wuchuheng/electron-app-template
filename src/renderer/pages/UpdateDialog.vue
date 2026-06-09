@@ -102,7 +102,7 @@ function renderMarkdown(notes: string): string {
           <div class="scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 flex-1 overflow-y-auto bg-white/50 p-4 dark:bg-black/10">
             <div
               class="prose prose-sm dark:prose-invert max-w-none text-text-secondary"
-              v-html="renderMarkdown(info.releaseNotes || '')"
+              v-html="renderMarkdown(formatReleaseNotes(info.releaseNotes))"
             />
           </div>
         </div>

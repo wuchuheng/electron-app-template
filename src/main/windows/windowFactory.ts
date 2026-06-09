@@ -229,7 +229,7 @@ export const createWindow = async (): Promise<BrowserWindow> => {
           const appConfig = (configEntity?.value as AppConfig) || DEFAULT_APP_CONFIG;
           shouldHide = appConfig.runInBackground;
         } catch (error) {
-          logger.error('Error checking runInBackground config:', error);
+          logger.error('Error checking runInBackground config: ' + String(error));
         }
 
         if (shouldHide) {
